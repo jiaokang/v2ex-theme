@@ -9,26 +9,27 @@
   color-scheme: light dark;
   --vp-ui: "Charcoal", "Chicago", "Geneva", "Lucida Grande", Tahoma, "PingFang SC", "Microsoft YaHei", sans-serif;
   --vp-mono: Monaco, Menlo, Consolas, ui-monospace, monospace;
-  --vp-desk: light-dark(#ccc, #303036);
-  --vp-chrome: light-dark(#d8d8d8, #42424b);
-  --vp-paper: light-dark(#fff, #202027);
-  --vp-field: light-dark(#ededed, #2c2c35);
-  --vp-hover: light-dark(#eaeaf8, #333344);
-  --vp-edge: light-dark(#3f3f3f, #15151a);
-  --vp-rule: light-dark(#d5d5d5, #45454f);
-  --vp-light: light-dark(#fff, #696976);
-  --vp-shade: light-dark(#888, #25252d);
-  --vp-ink: light-dark(#262626, #f0f0f4);
-  --vp-quiet: light-dark(#555, #bcbcc7);
-  --vp-link: light-dark(#333399, #b9b9ff);
-  --vp-link-visited: light-dark(#614b7e, #cfb4e8);
-  --vp-select: light-dark(#ccf, #434372);
-  --vp-focus: light-dark(#333399, #c9c9ff);
+  --vp-desk: light-dark(#c6c4be, #2b2b30);
+  --vp-chrome: light-dark(#d3d1cb, #35353d);
+  --vp-paper: light-dark(#efeee9, #202027);
+  --vp-field: light-dark(#e2e0da, #2c2c35);
+  --vp-hover: light-dark(#e7e6df, #303039);
+  --vp-edge: light-dark(#62615e, #15151a);
+  --vp-rule: light-dark(#d1cfc8, #3b3b44);
+  --vp-light: light-dark(#e6e4de, #50505b);
+  --vp-shade: light-dark(#a39f96, #25252d);
+  --vp-ink: light-dark(#30302e, #d3d2d9);
+  --vp-quiet: light-dark(#51504c, #a4a3ad);
+  --vp-link: light-dark(#464c65, #aaa9bf);
+  --vp-link-visited: light-dark(#5a4e60, #b4a4b8);
+  --vp-title: light-dark(#35394c, #c0bfd0);
+  --vp-select: light-dark(#d1d2dd, #3c3c50);
+  --vp-focus: light-dark(#4d5273, #b6b5cc);
   --vp-raised: inset 1px 1px 0 var(--vp-light), inset -1px -1px 0 var(--vp-shade);
   --vp-sunken: inset 1px 1px 0 var(--vp-shade), inset -1px -1px 0 var(--vp-light);
   --vp-gutter: clamp(14px, 3vw, 26px);
   --vp-pad: 15px;
-  --vp-logo: brightness(0);
+  --vp-logo: brightness(0) invert(.18);
 
   /* Let native V2EX controls and overlays inherit the same palette. */
   --code-font: var(--vp-mono);
@@ -65,10 +66,10 @@
 :root[data-site-theme="dark"],
 :root:not([data-site-theme]):has(#Wrapper.Night) {
   color-scheme: dark;
-  --vp-logo: brightness(0) invert(.94);
+  --vp-logo: brightness(0) invert(.82);
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-site-theme="light"]) { --vp-logo: brightness(0) invert(.94); }
+  :root:not([data-site-theme="light"]) { --vp-logo: brightness(0) invert(.82); }
 }
 
 html, body { background: var(--vp-desk); color: var(--vp-ink); }
@@ -201,7 +202,7 @@ body { min-width: 0 !important; font-family: var(--vp-ui) !important; }
   line-height: 1.45;
   overflow-wrap: anywhere;
 }
-#Wrapper .item_title a:any-link { color: var(--vp-link); text-underline-offset: .16em; }
+#Wrapper .item_title a:any-link { color: var(--vp-title); text-underline-offset: .16em; }
 #Wrapper .item_title a:visited { color: var(--vp-link-visited); }
 #Wrapper .box > .cell.item:focus-within { background: var(--vp-hover); }
 @media (hover: hover) {
