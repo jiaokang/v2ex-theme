@@ -147,7 +147,11 @@ body { min-width: 0 !important; font-family: var(--vp-ui) !important; }
   font: 700 12px/16px var(--vp-ui);
   text-align: center;
 }
-#Wrapper .box > :is(.cell, .inner, .header, .subtle) {
+/* Native reply connectors are positioned relative to the site's row padding. */
+#Wrapper .box > :is(.cell, .inner, .header, .subtle):where(:not(
+  .reply-threads-d > .cell[data-depth],
+  .reply-threads-f.reply-lines-on > .cell[data-reply-id]
+)) {
   padding: 11px var(--vp-pad);
   border-bottom-color: var(--vp-rule);
 }
