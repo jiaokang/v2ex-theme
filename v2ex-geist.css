@@ -89,6 +89,82 @@
   }
 }
 
+/* Settings: neutral controls, with a solid selected tab and switch state. */
+#Wrapper :is(a.tab, a.tab_current)[href^="/settings/"] {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  margin: 2px 3px 2px 0;
+  padding: 0 9px;
+  border-radius: var(--vg-small-radius);
+  color: var(--vg-muted);
+  font: 500 13px/1.2 var(--vg-sans);
+}
+#Wrapper a.tab[href^="/settings/"]:hover { background: var(--vg-fill); color: var(--vg-text); }
+#Wrapper a.tab_current[href^="/settings/"] { background: var(--vg-solid); color: var(--vg-on-solid); }
+#Wrapper form[action="/settings"] .onoffswitch input {
+  display: block;
+  position: absolute;
+  opacity: 0;
+}
+#Wrapper form[action="/settings"] .onoffswitch input:focus-visible + label {
+  outline: 2px solid var(--vg-accent);
+  outline-offset: 2px;
+}
+#Wrapper form[action="/settings"] .onoffswitch label { box-shadow: inset 0 0 0 1px var(--vg-border); }
+#Wrapper form[action="/settings"] .onoffswitch .frame::before { background: var(--vg-solid); color: var(--vg-on-solid); }
+#Wrapper form[action="/settings"] .onoffswitch .frame::after { background: var(--vg-fill); color: var(--vg-muted); }
+#Wrapper form[action="/settings"] .onoffswitch .switch {
+  background: var(--vg-panel);
+  box-shadow: inset 0 0 0 1px var(--vg-strong);
+}
+#Wrapper:has(form[action="/settings"]) .theme-switch {
+  --theme-switch-track-color: var(--vg-fill);
+  --theme-switch-track-hover-color: var(--vg-hover);
+  --theme-switch-thumb-color: var(--vg-solid);
+  --theme-switch-thumb-hover-color: var(--vg-solid);
+  --theme-switch-glyph-color: var(--vg-muted);
+  --theme-switch-glyph-hover-color: var(--vg-text);
+  --theme-switch-glyph-chosen-color: var(--vg-on-solid);
+  --theme-switch-glyph-chosen-hover-color: var(--vg-on-solid);
+}
+#Wrapper form[action="/settings"] :is(select:not(.select2-hidden-accessible), .select2-selection--single) {
+  box-sizing: border-box;
+  height: 32px;
+  border: 1px solid var(--vg-strong);
+  border-radius: var(--vg-small-radius);
+  background: var(--vg-panel);
+  color: var(--vg-text);
+  font: 400 13px/1.2 var(--vg-sans);
+}
+#Wrapper form[action="/settings"] select:not(.select2-hidden-accessible) { padding-inline: 7px; }
+#Wrapper form[action="/settings"] .select2-container { max-width: 100%; }
+#Wrapper form[action="/settings"] .select2-selection__rendered { color: var(--vg-text); line-height: 30px; }
+#Wrapper form[action="/settings"] .select2-selection__arrow { height: 30px; }
+#Wrapper form[action="/settings"] .select2-selection__arrow b { border-block-color: var(--vg-muted); }
+/* Select2 appends its open menu directly to body. */
+:root:has(form[action="/settings"]) body > .select2-container--open .select2-dropdown {
+  background: var(--vg-panel);
+  border-color: var(--vg-strong);
+  color: var(--vg-text);
+}
+:root:has(form[action="/settings"]) body > .select2-container--open .select2-search__field {
+  border-color: var(--vg-strong);
+  background: var(--vg-panel);
+  color: var(--vg-text);
+}
+:root:has(form[action="/settings"]) body > .select2-container--open .select2-results__option--selected {
+  background: var(--vg-fill);
+}
+:root:has(form[action="/settings"]) body > .select2-container--open .select2-results__option--highlighted {
+  background: var(--vg-solid);
+  color: var(--vg-on-solid);
+}
+@media (prefers-reduced-motion: reduce) {
+  #Wrapper form[action="/settings"] .onoffswitch :is(.frame, .switch),
+  #Wrapper:has(form[action="/settings"]) .theme-switch :is(.theme-switch-thumb, .theme-switch-glyph) { transition: none; }
+}
+
 /* Shared page grid: discussion stream | existing sidebar. */
 html, body {
   background: var(--vg-canvas);
@@ -179,7 +255,11 @@ body {
 
 #Wrapper .box:empty,
 #Wrapper #pro-campaign-container:not(:has(> *)) { border: 0 !important; }
-#Wrapper .box > :is(.cell, .inner, .header, .subtle) {
+/* Native reply connectors are positioned relative to the site's row padding. */
+#Wrapper .box > :is(.cell, .inner, .header, .subtle):where(:not(
+  .reply-threads-d > .cell[data-depth],
+  .reply-threads-f.reply-lines-on > .cell[data-reply-id]
+)) {
   padding: 12px var(--vg-space);
   border-bottom-color: var(--vg-border);
 }
@@ -230,7 +310,7 @@ body {
 
 .item_title {
   font-size: 16px;
-  font-weight: 550;
+  font-weight: 400;
   line-height: 1.45;
   overflow-wrap: anywhere;
 }

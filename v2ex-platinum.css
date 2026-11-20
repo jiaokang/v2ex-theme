@@ -163,6 +163,93 @@ body { min-width: 0 !important; font-family: var(--vp-ui) !important; }
   box-shadow: var(--vp-raised);
 }
 
+/* Settings: raised controls and an inset selected tab. */
+#Wrapper :is(a.tab, a.tab_current)[href^="/settings/"] {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  margin: 2px 3px 2px 0;
+  padding: 0 8px;
+  border: 1px solid var(--vp-edge);
+  border-radius: 2px;
+  background: var(--vp-chrome);
+  color: var(--vp-ink);
+  box-shadow: var(--vp-raised);
+  font: 400 13px/1.2 var(--vp-ui);
+}
+#Wrapper a.tab[href^="/settings/"]:hover { background: var(--vp-field); }
+#Wrapper a.tab_current[href^="/settings/"] {
+  background: var(--vp-select);
+  box-shadow: var(--vp-sunken);
+  font-weight: 700;
+}
+#Wrapper form[action="/settings"] .onoffswitch input {
+  display: block;
+  position: absolute;
+  opacity: 0;
+}
+#Wrapper form[action="/settings"] .onoffswitch input:focus-visible + label {
+  outline: 2px solid var(--vp-focus);
+  outline-offset: 2px;
+}
+#Wrapper form[action="/settings"] .onoffswitch label { border-radius: 2px; }
+#Wrapper form[action="/settings"] .onoffswitch .frame::before { background: var(--vp-select); color: var(--vp-ink); box-shadow: var(--vp-sunken); }
+#Wrapper form[action="/settings"] .onoffswitch .frame::after { background: var(--vp-field); color: var(--vp-quiet); box-shadow: var(--vp-sunken); }
+#Wrapper form[action="/settings"] .onoffswitch .switch {
+  background: var(--vp-chrome);
+  box-shadow: var(--vp-raised), 0 0 0 1px var(--vp-edge);
+  border-radius: 2px;
+}
+#Wrapper:has(form[action="/settings"]) .theme-switch {
+  --theme-switch-track-color: var(--vp-field);
+  --theme-switch-track-hover-color: var(--vp-hover);
+  --theme-switch-thumb-color: var(--vp-select);
+  --theme-switch-thumb-hover-color: var(--vp-select);
+  --theme-switch-thumb-shadow: var(--vp-raised);
+  --theme-switch-glyph-color: var(--vp-quiet);
+  --theme-switch-glyph-hover-color: var(--vp-ink);
+  --theme-switch-glyph-chosen-color: var(--vp-ink);
+  --theme-switch-glyph-chosen-hover-color: var(--vp-ink);
+}
+#Wrapper:has(form[action="/settings"]) .theme-switch :is(.theme-switch-track, .theme-switch-thumb) { border-radius: 2px; }
+#Wrapper form[action="/settings"] :is(select:not(.select2-hidden-accessible), .select2-selection--single) {
+  box-sizing: border-box;
+  height: 32px;
+  border: 1px solid var(--vp-edge);
+  border-radius: 2px;
+  background: var(--vp-paper);
+  color: var(--vp-ink);
+  box-shadow: var(--vp-sunken);
+  font: 400 13px/1.2 var(--vp-ui);
+}
+#Wrapper form[action="/settings"] select:not(.select2-hidden-accessible) { padding-inline: 7px; }
+#Wrapper form[action="/settings"] .select2-container { max-width: 100%; }
+#Wrapper form[action="/settings"] .select2-selection__rendered { color: var(--vp-ink); line-height: 30px; }
+#Wrapper form[action="/settings"] .select2-selection__arrow { height: 30px; }
+#Wrapper form[action="/settings"] .select2-selection__arrow b { border-block-color: var(--vp-quiet); }
+/* Select2 appends its open menu directly to body. */
+:root:has(form[action="/settings"]) body > .select2-container--open .select2-dropdown {
+  background: var(--vp-paper);
+  border-color: var(--vp-edge);
+  color: var(--vp-ink);
+}
+:root:has(form[action="/settings"]) body > .select2-container--open .select2-search__field {
+  border-color: var(--vp-edge);
+  background: var(--vp-paper);
+  color: var(--vp-ink);
+}
+:root:has(form[action="/settings"]) body > .select2-container--open .select2-results__option--selected {
+  background: var(--vp-field);
+}
+:root:has(form[action="/settings"]) body > .select2-container--open .select2-results__option--highlighted {
+  background: var(--vp-select);
+  color: var(--vp-ink);
+}
+@media (prefers-reduced-motion: reduce) {
+  #Wrapper form[action="/settings"] .onoffswitch :is(.frame, .switch),
+  #Wrapper:has(form[action="/settings"]) .theme-switch :is(.theme-switch-thumb, .theme-switch-glyph) { transition: none; }
+}
+
 #Wrapper #Tabs {
   padding: 7px 9px;
   border-radius: 0;
@@ -202,7 +289,7 @@ body { min-width: 0 !important; font-family: var(--vp-ui) !important; }
 
 .item_title {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.45;
   overflow-wrap: anywhere;
 }
