@@ -333,7 +333,7 @@ body { min-width: 0 !important; font-family: var(--vc-ui) !important; }
 #Wrapper .header h1 {
   margin-block: .25em .45em;
   color: var(--vc-ink);
-  font: 600 clamp(23px, 2.6vw, 34px)/1.28 var(--vc-reading);
+  font: 600 clamp(18px, 1.85vw, 24px)/1.28 var(--vc-reading);
   overflow-wrap: anywhere;
   text-wrap: balance;
 }

@@ -369,7 +369,7 @@ body {
 #Wrapper .box > .header:has(h1) { padding-block: 20px; }
 #Wrapper .header h1 {
   color: var(--vg-text);
-  font-size: clamp(21px, 2.4vw, 30px);
+  font-size: clamp(18px, 1.85vw, 24px);
   font-weight: 650;
   line-height: 1.25;
   overflow-wrap: anywhere;
@@ -505,7 +505,6 @@ body {
   #Wrapper .cell.item td[width="70"] { width: 42px; }
   #Wrapper .cell.item td[width="48"] { width: 32px; }
   #Wrapper .cell.item td[width="48"] .avatar { width: 32px !important; }
-  #Wrapper .header h1 { font-size: 22px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
