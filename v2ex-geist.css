@@ -265,6 +265,19 @@ body {
 }
 #Wrapper .box > :is(.cell, .inner, .header, .subtle):last-child { border-bottom: 0; }
 #Rightbar .box > :is(.cell, .inner, .header) { padding: 12px 14px; }
+#Wrapper a.balance_area:any-link {
+  border: 1px solid var(--vg-border);
+  border-radius: var(--vg-small-radius);
+  background: var(--vg-panel);
+  color: var(--vg-text);
+  font-variant-numeric: tabular-nums;
+  text-shadow: none;
+}
+#Wrapper a.balance_area:hover {
+  border-color: var(--vg-strong);
+  background: var(--vg-fill);
+}
+#Wrapper a.balance_area:active { background: var(--vg-hover); }
 #Wrapper .box > .cell.item { padding-block: 12px; }
 #Wrapper .box > .cell.item:focus-within { background-color: var(--vg-fill); }
 
@@ -363,6 +376,41 @@ body {
   border-color: var(--vg-strong);
   color: var(--vg-text);
   font-weight: 700;
+}
+
+/* Plane directory: let the native icons distinguish the sections. */
+#Wrapper .box:has(> .inner > a.item_node) > .header:has(> .spacer + span[style]) {
+  gap: 6px 10px;
+  flex-wrap: wrap;
+  border-radius: calc(var(--vg-radius) - 1px) calc(var(--vg-radius) - 1px) 0 0 !important;
+  background-color: var(--vg-panel) !important;
+  color: var(--vg-text) !important;
+}
+#Wrapper .box:has(> .inner > a.item_node) > .header > .spacer + span[style] {
+  flex-wrap: wrap;
+  color: var(--vg-muted) !important;
+}
+#Wrapper .box:has(> .header > .spacer + span[style]) > .inner:has(> a.item_node) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 7px;
+}
+#Wrapper .box:has(> .header > .spacer + span[style]) > .inner > a.item_node:any-link {
+  box-sizing: border-box;
+  max-width: 100%;
+  margin: 0;
+  padding: 4px 7px;
+  border: 1px solid transparent;
+  border-radius: var(--vg-small-radius);
+  background: transparent;
+  color: var(--vg-text);
+  box-shadow: none;
+  font-size: 13px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+#Wrapper .box:has(> .header > .spacer + span[style]) > .inner > a.item_node:is(:hover, :focus-visible) {
+  background: var(--vg-fill);
 }
 
 /* Reading surfaces, Markdown and reply controls. */

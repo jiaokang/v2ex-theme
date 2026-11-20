@@ -157,6 +157,20 @@ body { min-width: 0 !important; font-family: var(--vp-ui) !important; }
 }
 #Wrapper .box > :is(.cell, .inner, .header, .subtle):last-child { border-bottom: 0; }
 #Rightbar .box > :is(.cell, .inner, .header) { padding: 10px 12px; }
+#Wrapper a.balance_area:any-link {
+  border: 1px solid var(--vp-edge);
+  border-radius: 2px;
+  background: var(--vp-chrome);
+  color: var(--vp-ink);
+  box-shadow: var(--vp-raised);
+  font-variant-numeric: tabular-nums;
+  text-shadow: none;
+}
+#Wrapper a.balance_area:hover { background: var(--vp-hover); }
+#Wrapper a.balance_area:active {
+  background: var(--vp-select);
+  box-shadow: var(--vp-sunken);
+}
 #Rightbar .box > .cell:first-child,
 #Wrapper #topic-replies .box > .cell:first-child:not([data-reply-id]) {
   background: var(--vp-chrome);
@@ -312,6 +326,44 @@ body { min-width: 0 !important; font-family: var(--vp-ui) !important; }
   line-height: 1.2;
 }
 #Wrapper :is(a.node, a.tag):hover { background: var(--vp-select); color: var(--vp-ink); }
+
+/* Plane directory: window headers and square node links. */
+#Wrapper .box:has(> .inner > a.item_node) > .header:has(> .spacer + span[style]) {
+  gap: 6px 10px;
+  flex-wrap: wrap;
+  border-radius: 0 !important;
+  background-color: var(--vp-chrome) !important;
+  color: var(--vp-ink) !important;
+  box-shadow: inset 0 1px var(--vp-light);
+}
+#Wrapper .box:has(> .inner > a.item_node) > .header > .spacer + span[style] {
+  flex-wrap: wrap;
+  color: var(--vp-quiet) !important;
+}
+#Wrapper .box:has(> .header > .spacer + span[style]) > .inner:has(> a.item_node) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 7px;
+}
+#Wrapper .box:has(> .header > .spacer + span[style]) > .inner > a.item_node:any-link {
+  box-sizing: border-box;
+  max-width: 100%;
+  margin: 0;
+  padding: 4px 7px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--vp-title);
+  box-shadow: none;
+  font-size: 13px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+#Wrapper .box:has(> .header > .spacer + span[style]) > .inner > a.item_node:is(:hover, :focus-visible) {
+  border-color: var(--vp-edge);
+  background: var(--vp-chrome);
+  box-shadow: var(--vp-raised);
+}
 #Wrapper :is(a.count_livid, a.count_orange, a.count_blue, a.count_green):any-link {
   box-sizing: border-box;
   min-width: 2.5em;
