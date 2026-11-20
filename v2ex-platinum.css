@@ -156,8 +156,35 @@ body { min-width: 0 !important; font-family: var(--vp-ui) !important; }
   border-bottom-color: var(--vp-rule);
 }
 #Wrapper .box > :is(.cell, .inner, .header, .subtle):last-child { border-bottom: 0; }
-#Rightbar .box > :is(.cell, .inner, .header) { padding: 10px 12px; }
-#Wrapper a.balance_area:any-link {
+#Rightbar .box > :is(.cell, .inner, .header) { padding: 10px 9px; }
+
+/* Sidebar cards: a raised frame around the recessed list surface. */
+#Wrapper #Rightbar .box:has(> :is(.cell, .inner, .header, .nodes-sidebar-container)) {
+  padding: 3px;
+  background: var(--vp-chrome);
+  box-shadow: var(--vp-raised), 2px 2px 0 var(--vp-edge);
+}
+#Rightbar .box > :is(.cell, .inner, .header, .nodes-sidebar-container) {
+  background: var(--vp-paper);
+  box-shadow: inset 1px 0 var(--vp-shade), inset -1px 0 var(--vp-light);
+}
+#Rightbar .box > :is(.cell:first-child, .header, .inner:first-child:has(+ .nodes-sidebar-container)) {
+  background: var(--vp-chrome);
+  box-shadow: var(--vp-raised);
+}
+#Rightbar .box > :is(.cell, .inner, .nodes-sidebar-container):last-child:where(:not(.cell:first-child)) {
+  box-shadow: inset 1px 0 var(--vp-shade), inset -1px -1px var(--vp-light);
+}
+
+/* Wrap at the control boundary, never inside a count or coin amount. */
+#Rightbar :has(> a[href="/notifications"]):has(> a.balance_area) {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+#Rightbar :has(> a.balance_area) > a[href="/notifications"] {
+  white-space: nowrap;
+}
+#Wrapper .balance_area {
   border: 1px solid var(--vp-edge);
   border-radius: 2px;
   background: var(--vp-chrome);
@@ -165,24 +192,51 @@ body { min-width: 0 !important; font-family: var(--vp-ui) !important; }
   box-shadow: var(--vp-raised);
   font-variant-numeric: tabular-nums;
   text-shadow: none;
+  white-space: nowrap;
+}
+#Rightbar a.balance_area:any-link {
+  gap: 3px;
+  padding-inline: 6px;
 }
 #Wrapper a.balance_area:hover { background: var(--vp-hover); }
 #Wrapper a.balance_area:active {
   background: var(--vp-select);
   box-shadow: var(--vp-sunken);
 }
-#Rightbar .box > .cell:first-child,
 #Wrapper #topic-replies .box > .cell:first-child:not([data-reply-id]) {
   background: var(--vp-chrome);
   box-shadow: var(--vp-raised);
 }
 
-/* Settings: raised controls and an inset selected tab. */
-#Wrapper :is(a.tab, a.tab_current)[href^="/settings/"] {
+/* Settings: raised control-panel header above a recessed tab tray. */
+#Wrapper .box:has(> :is(.cell, .inner, .header) > :is(a.tab, a.tab_current):is([href="/settings"], [href^="/settings/"]))
+> :is(.page-content-header, .header:first-child, .cell:first-child:has(img), .inner:first-child:has(img)):not(:has(> :is(a.tab, a.tab_current))) {
+  padding: 10px var(--vp-pad);
+  border-bottom: 1px solid var(--vp-edge);
+  background: var(--vp-chrome);
+  color: var(--vp-ink);
+  box-shadow: var(--vp-raised);
+  font-weight: 700;
+}
+#Wrapper .box:has(> :is(.cell, .inner, .header) > :is(a.tab, a.tab_current):is([href="/settings"], [href^="/settings/"]))
+> .page-content-header :is(h1, h2) {
+  color: inherit;
+  font: 700 16px/1.3 var(--vp-ui);
+}
+#Wrapper .box > :is(.cell, .inner, .header):has(> :is(a.tab, a.tab_current):is([href="/settings"], [href^="/settings/"])) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding-block: 9px;
+  background: var(--vp-field);
+  box-shadow: var(--vp-sunken);
+}
+#Wrapper .box > :is(.cell, .inner, .header) > :is(a.tab, a.tab_current):is([href="/settings"], [href^="/settings/"]) {
   display: inline-flex;
   align-items: center;
-  min-height: 26px;
-  margin: 2px 3px 2px 0;
+  min-height: 28px;
+  margin: 0;
   padding: 0 8px;
   border: 1px solid var(--vp-edge);
   border-radius: 2px;
@@ -190,11 +244,14 @@ body { min-width: 0 !important; font-family: var(--vp-ui) !important; }
   color: var(--vp-ink);
   box-shadow: var(--vp-raised);
   font: 400 13px/1.2 var(--vp-ui);
+  white-space: nowrap;
 }
-#Wrapper a.tab[href^="/settings/"]:hover { background: var(--vp-field); }
-#Wrapper a.tab_current[href^="/settings/"] {
+#Wrapper .box > :is(.cell, .inner, .header) > a.tab:is([href="/settings"], [href^="/settings/"]):hover { background: var(--vp-hover); }
+#Wrapper .box > :is(.cell, .inner, .header) > :is(a.tab_current, a.tab:active):is([href="/settings"], [href^="/settings/"]) {
   background: var(--vp-select);
   box-shadow: var(--vp-sunken);
+}
+#Wrapper .box > :is(.cell, .inner, .header) > a.tab_current:is([href="/settings"], [href^="/settings/"]) {
   font-weight: 700;
 }
 #Wrapper form[action="/settings"] .onoffswitch input {
@@ -340,11 +397,13 @@ body { min-width: 0 !important; font-family: var(--vp-ui) !important; }
   flex-wrap: wrap;
   color: var(--vp-quiet) !important;
 }
+#Rightbar .box > :is(.cell, .inner):has(> a.item_node),
 #Wrapper .box:has(> .header > .spacer + span[style]) > .inner:has(> a.item_node) {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 7px;
 }
+#Rightbar .box > :is(.cell, .inner) > a.item_node:any-link,
 #Wrapper .box:has(> .header > .spacer + span[style]) > .inner > a.item_node:any-link {
   box-sizing: border-box;
   max-width: 100%;
@@ -358,6 +417,18 @@ body { min-width: 0 !important; font-family: var(--vp-ui) !important; }
   font-size: 13px;
   line-height: 1.3;
   overflow-wrap: anywhere;
+}
+#Rightbar .box > :is(.cell, .inner) > a.item_node:any-link {
+  border-color: var(--vp-edge);
+  background: var(--vp-chrome);
+  box-shadow: var(--vp-raised);
+}
+#Rightbar .box > :is(.cell, .inner) > a.item_node:is(:hover, :focus-visible) {
+  background: var(--vp-hover);
+}
+#Rightbar .box > :is(.cell, .inner) > a.item_node:active {
+  background: var(--vp-select);
+  box-shadow: var(--vp-sunken);
 }
 #Wrapper .box:has(> .header > .spacer + span[style]) > .inner > a.item_node:is(:hover, :focus-visible) {
   border-color: var(--vp-edge);

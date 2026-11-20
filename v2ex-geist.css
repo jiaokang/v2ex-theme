@@ -265,13 +265,14 @@ body {
 }
 #Wrapper .box > :is(.cell, .inner, .header, .subtle):last-child { border-bottom: 0; }
 #Rightbar .box > :is(.cell, .inner, .header) { padding: 12px 14px; }
-#Wrapper a.balance_area:any-link {
+#Wrapper .balance_area {
   border: 1px solid var(--vg-border);
   border-radius: var(--vg-small-radius);
   background: var(--vg-panel);
   color: var(--vg-text);
   font-variant-numeric: tabular-nums;
   text-shadow: none;
+  white-space: nowrap;
 }
 #Wrapper a.balance_area:hover {
   border-color: var(--vg-strong);
@@ -390,11 +391,13 @@ body {
   flex-wrap: wrap;
   color: var(--vg-muted) !important;
 }
+#Rightbar .box > :is(.cell, .inner):has(> a.item_node),
 #Wrapper .box:has(> .header > .spacer + span[style]) > .inner:has(> a.item_node) {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 7px;
 }
+#Rightbar .box > :is(.cell, .inner) > a.item_node:any-link,
 #Wrapper .box:has(> .header > .spacer + span[style]) > .inner > a.item_node:any-link {
   box-sizing: border-box;
   max-width: 100%;
@@ -408,6 +411,14 @@ body {
   font-size: 13px;
   line-height: 1.3;
   overflow-wrap: anywhere;
+}
+#Rightbar .box > :is(.cell, .inner) > a.item_node:any-link {
+  border-color: var(--vg-border);
+  background: var(--vg-panel);
+}
+#Rightbar .box > :is(.cell, .inner) > a.item_node:is(:hover, :focus-visible, :active) {
+  border-color: var(--vg-strong);
+  background: var(--vg-fill);
 }
 #Wrapper .box:has(> .header > .spacer + span[style]) > .inner > a.item_node:is(:hover, :focus-visible) {
   background: var(--vg-fill);
