@@ -13,3 +13,4 @@ __unconfig*
 todos.json
 /v2ex-snapshot/
 /v2ex-*-snap/
+.dev.vars

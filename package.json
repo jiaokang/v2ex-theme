@@ -11,6 +11,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "db:migrate:local": "wrangler d1 migrations apply v2ex-theme --local",
+    "db:migrate:remote": "wrangler d1 migrations apply v2ex-theme --remote",
     "screenshots:themes": "node scripts/capture-theme-previews.mjs"
   },
   "dependencies": {

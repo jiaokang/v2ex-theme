@@ -4,7 +4,9 @@ import { Button } from '@ui-sdk/react/button'
 import ArrowLeft from 'lucide-react/icons/arrow-left'
 import Check from 'lucide-react/icons/check'
 import Copy from 'lucide-react/icons/copy'
+import { LikeButton } from '../components/like-button'
 import { ThemePreview } from '../components/theme-preview'
+import { getThemeLike } from '../likes'
 import { siteName } from '../site'
 import { themes } from '../themes'
 
@@ -19,7 +21,11 @@ export const Route = createFileRoute('/t/$slug')({
     if (!theme) throw notFound()
     const getCss = themeStyles[`../../public/themes/${theme.id}/theme.css`]
     if (!getCss) throw notFound()
-    return { theme, css: await getCss() }
+    const [css, like] = await Promise.all([
+      getCss(),
+      getThemeLike({ data: { slug: theme.id } }).catch(() => null),
+    ])
+    return { theme, css, like }
   },
   head: ({ loaderData }) => loaderData ? {
     meta: [
@@ -32,7 +38,7 @@ export const Route = createFileRoute('/t/$slug')({
 })
 
 function ThemeDetail() {
-  const { theme, css } = Route.useLoaderData()
+  const { theme, css, like } = Route.useLoaderData()
   return (
     <main className="theme-gallery theme-detail">
       <BackToGallery />
@@ -41,6 +47,7 @@ function ThemeDetail() {
           <h1>{theme.name}</h1>
           <p>{theme.description}</p>
           <p className="detail-author">作者：<span className="theme-card-author">{theme.author}</span></p>
+          {like && <LikeButton key={theme.id} slug={theme.id} initial={like} />}
         </div>
         <GetTheme key={theme.id} slug={theme.id} />
       </header>

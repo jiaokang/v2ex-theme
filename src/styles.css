@@ -309,6 +309,81 @@ body {
   transform: translateX(2px);
 }
 
+.theme-card-end {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-card-likes {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--foreground-muted);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.theme-card-likes .ui-icon {
+  inline-size: 14px;
+  block-size: 14px;
+}
+
+.like-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 14px;
+}
+
+.like-toggle .like-count {
+  min-width: 1ch;
+  color: var(--foreground-muted);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.like-toggle [data-slot='toggle-icon'] {
+  display: inline-flex;
+}
+
+/* Pressed reads as a Raft sticker, matching ToggleGroup's pressed item. */
+.like-toggle[data-pressed] {
+  border-color: var(--sticker-edge);
+  background: var(--sticker-paper);
+  color: var(--sticker-ink);
+}
+
+.like-toggle[data-pressed]:hover {
+  background: var(--sticker-medium);
+}
+
+.like-toggle[data-pressed] .like-count {
+  color: inherit;
+}
+
+.like-toggle[data-pressed] svg {
+  fill: currentColor;
+}
+
+.like-toggle:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  border: 0;
+  white-space: nowrap;
+}
+
 .theme-detail {
   padding-top: clamp(1.25rem, 3.5vw, 2rem);
 }
