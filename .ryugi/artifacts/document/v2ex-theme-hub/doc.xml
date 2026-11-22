@@ -1,0 +1,76 @@
+<doc>
+  <h1 id="Da8zSwmW">V2EX Theme Hub · 首版实施规格</h1>
+  <p id="nZurCDxk">先在熟悉的 V2EX 页面里试主题，再决定是否手动导入；作者只需维护一份 CSS 和一份元数据。</p>
+  <h2 id="6BnWDn6i">目标与边界</h2>
+  <p id="grvm_IyA">这个 Hub 是 V2EX 的第三方主题目录，不代替 V2EX 的设置页。访客可以先看主题在熟悉的页面里是什么样，再到 V2EX 手动导入。仓库已有 Claude、Geist、Platinum 三份 CSS，可以作为首批主题候选；作者信息由投稿元数据显式声明，不从提交记录猜测。</p>
+  <p id="8a8P2zsZ">我的建议是把发布和通知拆开。GitHub 保存 CSS、作者和版本记录，审核合并后随站点静态发布；如果部署在 Cloudflare，首版用 Workers Static Assets 就够了，先不用 R2。R2 能存文件，但不决定 V2EX 会不会更新：如果 V2EX 保存的是 CSS 内容，就需要用户重新导入；如果它保存并持续请求远程 URL，才有机会用稳定链接提供更新，还得验证实际加载和缓存行为。首版先展示版本和变更记录，不承诺自动更新或推送。</p>
+  <p id="EYHsRmef">预览建议保留 V2EX 的 HTML 结构和样式，但用清理过的离线样本和示例内容。主题 CSS 只加载在沙箱 iframe 内，禁用脚本、表单和外部资源请求，避免预览依赖真实账号或影响 Hub 页面。投稿 CSS 在发布前还需要单独审核，因为用户导入后不再受 Hub 预览的隔离保护。</p>
+  <h2 id="kiP1oMU3">已确定</h2>
+  <ul id="mhR07QEz">
+    <li>你的要求：一个主题就是一份 CSS；用户在 V2EX 设置中自行导入。</li>
+    <li>你的要求：Hub 支持预览和投稿，每个主题展示作者并支持点赞。</li>
+    <li>你的要求：网站体现主题创作 Skill 的入口，Skill 的具体逻辑另议。</li>
+    <li>你选定的预览范围：首页、帖子详情、个人主页、设置页。个人主页和设置页用虚构数据，不采集真实用户或账号设置。</li>
+    <li>你接受的首版默认：展示版本和变更记录，用户自行更新；免登录点赞，同浏览器可取消；GitHub PR 投稿；创作指南先上线，Skill 标注筹备中。</li>
+    <li>你确认：每主题一份 theme.json；省略许可时默认 MIT；Hub 只提供最新版 CSS；Claude、Geist、Platinum 均署名 yuyinws。</li>
+  </ul>
+  <h2 id="2U3Vkjxm">访问与投稿流程</h2>
+  <p id="THfzcmoH"><ref artboard="v2ex-theme-hub" to="Nq9DPryKC8WqNlIAyrbZI" group="direction" /></p>
+  <p id="AuZzqOM-">你已选定 <ref artboard="v2ex-theme-hub" to="Nq9DPryKC8WqNlIAyrbZI" board="gallery">A · 主题图册</ref>：用同一份 V2EX 首页示意并排展示各主题，详情页再提供四种场景和原样对照。</p>
+  <p id="mZiAP0C3">目录展示主题名称、简述、作者、当前版本和点赞数。详情默认开启首页预览，访客可以切换到帖子详情、个人主页和设置页，也可以切回无主题样式做对照。Hub 用克制的中性界面，让预览区成为主角；移动端可顺序访问预览、安装和变更记录。用户可复制 CSS 或下载同一份文件；上线前核实 V2EX 的实际导入方式，再据此写安装步骤，不宣称已检测到用户安装的版本。</p>
+  <p id="j95KewWC">创作入口给出 CSS 样例、四种预览样本的用途、元数据模板、校验方式和 GitHub PR 链接。明确标注 Skill 筹备中，不提供无法使用的安装按钮。首版不做在线编辑器、账户、更新订阅或自动安装。</p>
+  <h2 id="ijx462NZ">数据与发布</h2>
+  <p id="O1lewJ-2">每主题一个 <code>themes/&lt;slug&gt;/</code> 目录，含 <code>theme.css</code> 和 <code>theme.json</code>。目录名是稳定 ID，只允许小写字母、数字和连字符；改主题显示名不改 ID。我的默认：仓库已有的三个根目录 CSS 路径原样保留，不自动同步；Hub 从新目录发布，避免让仍引用旧路径的人意外收到改动。</p>
+  <p id="cuE8XhKX">元数据字段：<code>name</code>、<code>description</code>、<code>authors</code>（非空数组；每项有 <code>name</code>，可填 HTTPS <code>url</code>）、<code>license</code>（可省略，默认 MIT；首版只接受 MIT 主题）、<code>releases</code>（非空数组；每项有 <code>version</code>、ISO 日期 <code>date</code>、<code>summary</code>）。版本用 SemVer，不重复，最新在首位。元数据构建失败则禁止发布；CSS 变更必须新增版本记录，合并后两者同一次部署更新。作者须确认拥有发布权，并随 CSS 分发适用的版权和许可声明。</p>
+  <p id="ntZqw_cc">我的实现默认：沿用当前仓库，用 Astro 生成静态目录与详情页面，Cloudflare Workers Static Assets 提供站点和 CSS；Worker 只处理点赞 API，D1 只存点赞。不引入 R2。代码和 CSS 从 PR 到部署走同一套 CI；旧版本仍可在 Git 历史查找，不在 Hub 维护下载归档。</p>
+  <h3 id="NgXTd7R0">首版技术栈</h3>
+  <ul id="AR6R5Jim">
+    <li><b>站点：</b>Astro 静态生成、TypeScript、原生 CSS（CSS 变量维护图册 A 的样式）。用少量原生客户端脚本处理场景切换、复制和点赞；不引入 React、Vue、Tailwind 或 SSR。</li>
+    <li><b>主题与校验：</b>GitHub 仓库是唯一数据源。构建时用 Zod 校验 <code>theme.json</code>，用 CSSTree 解析并检查主题 CSS，再生成主题索引和公开静态文件。预览、复制、下载使用同一发布版 CSS。</li>
+    <li><b>预览：</b>四份自建的静态 HTML 样本，使用 sandbox iframe 与 CSP 隔离。原样对照只移除主题样式，页面内容保持不变。</li>
+    <li><b>分发：</b>Cloudflare Workers Static Assets 直出页面和稳定地址 <code>/themes/&lt;slug&gt;/theme.css</code>；稳定 CSS 地址保留默认 ETag 与重新验证策略。不经 Worker 脚本转发，不引入 R2。</li>
+    <li><b>后端：</b>原生 TypeScript Worker 只处理点赞 API，使用 D1 和 SQL 迁移；不引入 Hono、ORM 或账户系统。</li>
+    <li><b>工程：</b>Node.js 24 LTS、npm 与 lockfile；Node 测试运行器覆盖投稿校验，Playwright 覆盖浏览器交互。Cloudflare 使用 <code>cf</code> CLI。GitHub Actions 在 PR 上跑校验、测试和构建；生产发布在授权和真实导入验收后启用。</li>
+  </ul>
+  <h2 id="A3UiX5qm">预览与字体</h2>
+  <p id="aSQ4zQKL">我的默认：按 V2EX 的页面结构自行重建四份离线样本，保留主题需要的选择器，用自写的基础样式、虚构内容和获准分发的资产。没有明确许可时不发布 V2EX 的原始 HTML、样式表或素材；预览标明是示意，不承诺与线上页面像素一致。不保留脚本、表单提交、站外导航、真实账号、令牌或第三方资源。主题只进入无脚本、无同源权限的沙箱 iframe，并使用 CSP 限制资源加载；样本不依赖 V2EX 在线服务。</p>
+  <p id="7BPC2JF6">字体不是不能加载。限制的是对任意第三方地址的请求：一打开预览，对方就可能收到访客 IP，字体服务失败也会改变预览效果。我的首版默认是优先使用本地字体；需要保留字体效果时，且获得再分发许可、通过大小上限并确认 V2EX 导入兼容后，把 WOFF2 内嵌在同一份 CSS 中，保留字体的授权声明。否则使用回退字体。预览不开任意第三方请求，投稿不接受外链 <code>@import</code> 或外部资源 URL；内嵌字体为受控例外。</p>
+  <p id="_9ZtYPiM">发布检查：使用 CSS 解析器拒绝所有 <code>@import</code> 和资源 URL，仅允许 <code>@font-face</code> 中经过校验的内嵌 WOFF2。人工审核拒绝仿冒站点提示或交互入口、遮挡关键操作、缺少素材授权的主题。三个首发主题的署名已确认，但发布前仍需由权利人确认可按 MIT 再分发；未确认的主题仅留在本地，不公开发布。</p>
+  <h2 id="9QcypuUb">点赞</h2>
+  <p id="iEcGvWTL">首次交互由 Hub 发放不透明的随机浏览器标识，使用安全 Cookie 保存。D1 以主题 ID 和匿名标识为唯一键；点赞和取消都是幂等操作，响应包含最新计数与本浏览器状态。服务端校验主题 ID 与同站写请求并限制写入频率。浏览器清理 Cookie 或换设备会失去原状态，因此不是一人一票；不据此做权威热榜。点赞失败不影响浏览、预览或下载。</p>
+  <h2 id="U7OA0N-Y">上线验收</h2>
+  <ul id="AV7ON5BN">
+    <li>三个首发主题均显示 yuyinws、当前版本与许可；目录、详情和创作指南可从手机访问。</li>
+    <li>每个主题在四份样本可切换并与原样式对照；浏览器实测预览无第三方请求，且不会更改 Hub 自身样式。</li>
+    <li>实现前先核实真实的 V2EX 导入方式和限制。预览、复制和下载使用同一发布版 CSS；所有首发主题均须实测能导入，不能导入的先修正或暂不上架。</li>
+    <li>同浏览器刷新后点赞状态保留，重复请求不重复计数，取消后其他浏览器看到的新计数正确；无效主题不写入 D1。</li>
+    <li>用一份示例投稿跑通校验；错误元数据、未更新版本的 CSS 修改和违规资源引用能阻止发布。</li>
+  </ul>
+  <details id="i1LBVBN2" summary="第二轮提交记录" open="false">
+    <h3 id="ArJZ-WIB">1. 关键分叉：元数据跟主题走，还是集中维护？</h3>
+    <p id="Li2oaFA8">推荐每个主题一个目录：<code>themes/geist/theme.css</code> 是用户导入的文件，<code>themes/geist/theme.json</code> 是 Hub 使用的元数据。CSS 和 JSON 在同一个 PR 里审核。目录名就是稳定 ID；构建时校验每份 JSON，并生成站点目录索引。不把元数据存 D1 或 R2，D1 只存点赞关系；主题改名、发新版都不会重置点赞。</p>
+    <p id="yCQUN-rV">必填字段：<code>name</code>、<code>description</code>、<code>authors</code>（至少一位，每位必填显示名、可填主页链接）、<code>license</code>、<code>releases</code>（每条包含版本、日期和变更摘要）。最新版本取版本记录第一条，不重复填写。预览指向同一份 CSS，作者不用上传截图。</p>
+    <p id="3F6KA0CT"><ask id="metadata-layout" recommend="per-theme"><option value="per-theme">每主题一份 theme.json，构建生成总索引</option><option value="central">在仓库根目录集中维护一份 themes.json</option></ask></p>
+    <h3 id="5QA1VM3C">2. 投稿的许可怎么定？</h3>
+    <p id="Uy8MEkZx">推荐统一 MIT，投稿时确认有权按此许可发布，第三方素材另行检查授权。许可写在元数据里，也在详情页展示。</p>
+    <p id="IsvXw2Wi"><ask id="theme-license" recommend="mit"><option value="mit">主题统一 MIT</option><option value="author-choice">作者从支持的开源许可中选一种</option></ask></p>
+    <h3 id="Ioov0HYr">3. 首版需要让用户下载旧版 CSS 吗？</h3>
+    <p id="JgCbainl">推荐 Hub 只提供当前 CSS 和历史变更记录；旧版源码还在 Git。这样无需维护下载归档，也不暗示 URL 会自动更新已安装的主题。</p>
+    <p id="uHJxh850"><ask id="release-downloads" recommend="current"><option value="current">只下载最新版，保留历史变更记录</option><option value="all">Hub 也提供历代版本下载，方便回退</option></ask></p>
+    <h3 id="PGSUvVg4">4. 现有主题的外链字体怎么处理？</h3>
+    <p id="VC57FTpO">Claude 和 Geist 都引用外链字体。推荐发布版只接受不发外部请求的 CSS：首发换成合适的本地字体和回退字体，让预览与下载使用同一份文件。不为字体开放预览的外部网络。</p>
+    <p id="-Nu8V9Jf"><ask id="external-fonts" recommend="local"><option value="local">发布和预览均使用本地字体与回退字体</option><option value="reviewed">发布版保留经过审核的外链字体，预览阻止加载并提示差异</option></ask></p>
+    <h3 id="Hi63BkzA">5. 三个首发主题怎么署名？</h3>
+    <p id="WQiNKtJJ">仓库的 CSS 文件本身不是署名凭证。建议三款都作为首发候选，等署名和许可确认后再上架。</p>
+    <p id="2PGYbLPD"><ask id="seed-credits" placeholder="可以填同一个作者，例如：三款均署名 X（主页 URL），也可以逐款填写" /></p>
+  </details>
+  <details id="rWqNf7Mm" summary="第一轮提交记录" open="false">
+    <p id="-UiH_10G"><ask id="updates" recommend="manual"><option value="manual">显示版本和变更记录，由用户自行检查并重新导入</option><option value="follow">支持订阅新版本通知，安装仍由用户决定</option><option value="remote">把稳定 URL 自动跟更作为首版目标，先验证 V2EX 是否支持</option></ask></p>
+    <p id="Lsz8I2JK"><ask id="fixtures" recommend="two"><option value="two">首页主题列表 + 帖子详情</option><option value="one">只做首页主题列表</option><option value="three">首页、帖子详情、个人主页</option></ask></p>
+    <p id="W4WBMbrZ"><ask id="likes" recommend="anonymous"><option value="anonymous">免登录点赞，同浏览器可取消，保存全站计数</option><option value="github">GitHub 登录后点赞，跨设备同步且每账号一票</option></ask></p>
+    <p><ask id="submission" recommend="pr"><option value="pr">Hub 提供投稿指南，作者通过 GitHub PR 提交 CSS 和元数据</option><option value="upload">Hub 提供在线上传和草稿，审核后发布</option></ask></p>
+    <p id="rxUccdf5"><ask id="skill-entry" recommend="guide"><option value="guide">先提供创作与投稿指南，并明确标注 Skill 筹备中</option><option value="ready">和可安装的 Skill 一起上线</option></ask></p>
+  </details>
+  <p id="mwlJc6UW">是否按此规格开始实现？<ask id="approve"><option value="approve">批准，按规格实现</option><option value="revise">需要调整，我会留言</option></ask></p>
+</doc>
+
