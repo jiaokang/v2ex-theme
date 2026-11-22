@@ -31,7 +31,7 @@ echo "LIKE_SECRET=$(openssl rand -hex 32)" > .dev.vars
 npm run db:migrate:local
 ```
 
-首次部署时 Wrangler 会自动创建 D1 数据库，之后再执行：
+首次部署前设置密钥并建表：
 
 ```bash
 npx wrangler secret put LIKE_SECRET

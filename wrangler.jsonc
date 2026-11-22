@@ -1,25 +1,29 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "v2ex-theme",
-  "compatibility_date": "2026-11-21",
-  "main": "@tanstack/react-start/server-entry",
-  "observability": {
-    "enabled": true
-  },
-  // Theme likes. `database_id` is filled in by Wrangler's automatic provisioning on first deploy.
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "v2ex-theme",
-      "migrations_dir": "migrations"
-    }
-  ],
-  // Per-IP throttle on like writes; it slows scripts down rather than identifying people.
-  "ratelimits": [
-    {
-      "name": "LIKE_LIMITER",
-      "namespace_id": "1001",
-      "simple": { "limit": 20, "period": 60 }
-    }
-  ]
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "v2ex-theme",
+	"compatibility_date": "2026-11-21",
+	"main": "@tanstack/react-start/server-entry",
+	"observability": {
+		"enabled": true
+	},
+	// Theme likes.
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "v2ex-theme",
+			"database_id": "d29b5154-7946-4114-90d8-f9197374df0c",
+			"migrations_dir": "migrations"
+		}
+	],
+	// Per-IP throttle on like writes; it slows scripts down rather than identifying people.
+	"ratelimits": [
+		{
+			"name": "LIKE_LIMITER",
+			"namespace_id": "1001",
+			"simple": {
+				"limit": 20,
+				"period": 60
+			}
+		}
+	]
 }
