@@ -1,0 +1,394 @@
+name: PR Preview
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  statuses: write
+
+concurrency:
+  group: pr-preview-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    # Maintainers can comment `/preview` on any PR (especially external fork PRs) to build and deploy
+    # a Cloudflare Worker Preview using trusted main code + static theme files extracted from the PR.
+    if: >-
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association) &&
+      startsWith(github.event.comment.body, '/preview')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate comment and inspect PR
+        id: pr
+        uses: actions/github-script@v7
+        env:
+          HAS_CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+        with:
+          script: |
+            const body = (context.payload.comment.body || '').trim()
+            if (!/^\/preview$/i.test(body)) {
+              core.info('Comment does not match /preview command syntax; skipping.')
+              core.setOutput('proceed', 'false')
+              return
+            }
+
+            const { owner, repo } = context.repo
+            const pull_number = context.issue.number
+            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`
+
+            async function reply(message) {
+              await github.rest.issues.createComment({ owner, repo, issue_number: pull_number, body: message })
+            }
+
+            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number })
+            if (pr.state !== 'open') {
+              await reply('该 PR 当前不是打开状态，已跳过预览部署。')
+              core.setOutput('proceed', 'false')
+              return
+            }
+            if (!pr.head.repo) {
+              await reply('无法读取该 PR 的源仓库（可能已被删除），已跳过预览部署。')
+              core.setOutput('proceed', 'false')
+              return
+            }
+            if (process.env.HAS_CF_TOKEN !== 'true') {
+              await reply('仓库尚未配置 `CLOUDFLARE_API_TOKEN` Secret（需具备 **Workers Scripts: Edit** 权限；多账号时还需配置 `CLOUDFLARE_ACCOUNT_ID`），无法部署 Cloudflare 预览。')
+              core.setOutput('proceed', 'false')
+              return
+            }
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner,
+              repo,
+              pull_number,
+              per_page: 100,
+            })
+
+            const themeFilePattern = /^public\/themes\/([a-z0-9-]+)\/(theme\.json|theme\.css)$/
+            const previewFilePattern = /^public\/theme-previews\/([a-z0-9-]+)\.webp$/
+
+            const touchedSlugSet = new Set()
+            const nonThemeFiles = []
+            for (const f of files) {
+              const themeMatch = f.filename.match(themeFilePattern)
+              const previewMatch = f.filename.match(previewFilePattern)
+              if (themeMatch) {
+                touchedSlugSet.add(themeMatch[1])
+              } else if (previewMatch) {
+                touchedSlugSet.add(previewMatch[1])
+              } else {
+                nonThemeFiles.push(f.filename)
+              }
+            }
+
+            const touchedSlugs = [...touchedSlugSet].sort()
+            if (touchedSlugs.length === 0) {
+              await reply('该 PR 未包含 `public/themes/` 或 `public/theme-previews/` 下的静态主题改动；出于安全限制，`/preview` 仅提取主题静态文件到可信主分支构建预览。')
+              core.setOutput('proceed', 'false')
+              return
+            }
+
+            await github.rest.reactions.createForIssueComment({
+              owner,
+              repo,
+              comment_id: context.payload.comment.id,
+              content: 'eyes',
+            })
+
+            await github.rest.repos.createCommitStatus({
+              owner,
+              repo,
+              sha: pr.head.sha,
+              state: 'pending',
+              context: 'Cloudflare Preview',
+              description: 'Building and deploying PR preview...',
+              target_url: runUrl,
+            })
+
+            core.setOutput('proceed', 'true')
+            core.setOutput('pr_number', String(pull_number))
+            core.setOutput('head_sha', pr.head.sha)
+            core.setOutput('run_url', runUrl)
+            core.setOutput('touched_slugs_json', JSON.stringify(touchedSlugs))
+            core.setOutput('non_theme_files_count', String(nonThemeFiles.length))
+
+      - name: Checkout trusted default branch
+        if: steps.pr.outputs.proceed == 'true'
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Extract static theme files from PR head
+        id: extract
+        if: steps.pr.outputs.proceed == 'true'
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          TOUCHED_SLUGS_JSON: ${{ steps.pr.outputs.touched_slugs_json }}
+        run: |
+          node --input-type=module - <<'EOF'
+          import { execFileSync } from 'node:child_process'
+          import { appendFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+
+          const { PR_NUMBER, HEAD_SHA, TOUCHED_SLUGS_JSON, GITHUB_OUTPUT } = process.env
+          const touchedSlugs = JSON.parse(TOUCHED_SLUGS_JSON || '[]')
+
+          execFileSync('git', ['fetch', '--no-tags', '--depth=1', 'origin', `refs/pull/${PR_NUMBER}/head`], {
+            stdio: 'inherit',
+          })
+          const fetchedSha = execFileSync('git', ['rev-parse', 'FETCH_HEAD'], { encoding: 'utf8' }).trim()
+          if (fetchedSha !== HEAD_SHA) {
+            throw new Error(`PR head changed during workflow (${HEAD_SHA} -> ${fetchedSha}); re-run /preview after reviewing the latest commit.`)
+          }
+
+          function listTree(dir) {
+            try {
+              const out = execFileSync('git', ['ls-tree', '-r', '--name-only', 'FETCH_HEAD', dir], { encoding: 'utf8' })
+              return new Set(out.split('\n').map((s) => s.trim()).filter(Boolean))
+            } catch {
+              return new Set()
+            }
+          }
+
+          const prThemeFiles = listTree('public/themes')
+          const prPreviewFiles = listTree('public/theme-previews')
+
+          const activeSlugs = []
+          const missingWebpSlugs = []
+
+          for (const slug of touchedSlugs) {
+            const jsonPath = `public/themes/${slug}/theme.json`
+            const cssPath = `public/themes/${slug}/theme.css`
+            const webpPath = `public/theme-previews/${slug}.webp`
+
+            const hasTheme = prThemeFiles.has(jsonPath) && prThemeFiles.has(cssPath)
+            if (hasTheme) {
+              mkdirSync(`public/themes/${slug}`, { recursive: true })
+              writeFileSync(jsonPath, execFileSync('git', ['show', `FETCH_HEAD:${jsonPath}`]))
+              writeFileSync(cssPath, execFileSync('git', ['show', `FETCH_HEAD:${cssPath}`]))
+              activeSlugs.push(slug)
+            } else if (existsSync(`public/themes/${slug}`)) {
+              rmSync(`public/themes/${slug}`, { recursive: true, force: true })
+            }
+
+            if (prPreviewFiles.has(webpPath)) {
+              mkdirSync('public/theme-previews', { recursive: true })
+              writeFileSync(webpPath, execFileSync('git', ['show', `FETCH_HEAD:${webpPath}`]))
+            } else {
+              if (existsSync(webpPath)) rmSync(webpPath, { force: true })
+              if (hasTheme) missingWebpSlugs.push(slug)
+            }
+          }
+
+          console.log('Active preview slugs:', activeSlugs)
+          console.log('Slugs without webp preview:', missingWebpSlugs)
+          appendFileSync(GITHUB_OUTPUT, `active_slugs_json=${JSON.stringify(activeSlugs)}\n`)
+          appendFileSync(GITHUB_OUTPUT, `missing_webp_slugs_json=${JSON.stringify(missingWebpSlugs)}\n`)
+          EOF
+
+      - name: Setup pnpm
+        if: steps.pr.outputs.proceed == 'true'
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        if: steps.pr.outputs.proceed == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install trusted dependencies
+        if: steps.pr.outputs.proceed == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Build site
+        if: steps.pr.outputs.proceed == 'true'
+        run: pnpm build
+
+      - name: Deploy Cloudflare Worker Preview
+        id: deploy
+        if: steps.pr.outputs.proceed == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+        run: |
+          node --input-type=module - <<'EOF'
+          import { execFileSync } from 'node:child_process'
+          import { appendFileSync, existsSync, readFileSync, rmSync } from 'node:fs'
+
+          const { PR_NUMBER, HEAD_SHA, GITHUB_OUTPUT } = process.env
+          const shortSha = HEAD_SHA.slice(0, 7)
+          const previewName = `pr-${PR_NUMBER}`
+          const outputPath = '/tmp/wrangler-preview-output.ndjson'
+          if (existsSync(outputPath)) rmSync(outputPath, { force: true })
+
+          let stdout = ''
+          try {
+            stdout = execFileSync(
+              'pnpm',
+              [
+                'exec',
+                'wrangler',
+                'preview',
+                '--name',
+                previewName,
+                '--tag',
+                shortSha,
+                '--message',
+                `PR #${PR_NUMBER} (${shortSha})`,
+                '--json',
+              ],
+              {
+                encoding: 'utf8',
+                env: { ...process.env, WRANGLER_OUTPUT_FILE_PATH: outputPath },
+                stdio: ['ignore', 'pipe', 'inherit'],
+              },
+            )
+          } catch (err) {
+            if (err.stdout) process.stderr.write(String(err.stdout))
+            throw err
+          }
+
+          let previewUrls = []
+          let deploymentUrls = []
+
+          if (existsSync(outputPath)) {
+            const entries = readFileSync(outputPath, 'utf8')
+              .split('\n')
+              .map((line) => line.trim())
+              .filter(Boolean)
+              .map((line) => JSON.parse(line))
+            const previewEntry = entries.findLast((e) => e.type === 'preview')
+            if (previewEntry) {
+              previewUrls = previewEntry.preview_urls ?? []
+              deploymentUrls = previewEntry.deployment_urls ?? []
+            }
+          }
+
+          if (previewUrls.length === 0 && deploymentUrls.length === 0 && stdout.trim()) {
+            const parsed = JSON.parse(stdout)
+            previewUrls = parsed.preview?.urls ?? []
+            deploymentUrls = parsed.deployment?.urls ?? []
+          }
+
+          const previewUrl = previewUrls[0] ?? ''
+          const deploymentUrl = deploymentUrls[0] ?? ''
+
+          console.log('Preview URL:', previewUrl)
+          console.log('Deployment URL:', deploymentUrl)
+          if (!previewUrl && !deploymentUrl) {
+            throw new Error('Wrangler preview succeeded but returned no active preview URL.')
+          }
+
+          appendFileSync(GITHUB_OUTPUT, `preview_url=${previewUrl}\n`)
+          appendFileSync(GITHUB_OUTPUT, `deployment_url=${deploymentUrl}\n`)
+          EOF
+
+      - name: Publish preview result
+        if: steps.pr.outputs.proceed == 'true' && steps.deploy.outcome == 'success'
+        uses: actions/github-script@v7
+        env:
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          RUN_URL: ${{ steps.pr.outputs.run_url }}
+          PREVIEW_URL: ${{ steps.deploy.outputs.preview_url }}
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment_url }}
+          ACTIVE_SLUGS_JSON: ${{ steps.extract.outputs.active_slugs_json }}
+          MISSING_WEBP_SLUGS_JSON: ${{ steps.extract.outputs.missing_webp_slugs_json }}
+          NON_THEME_FILES_COUNT: ${{ steps.pr.outputs.non_theme_files_count }}
+        with:
+          script: |
+            const { owner, repo } = context.repo
+            const issue_number = context.issue.number
+            const headSha = process.env.HEAD_SHA
+            const shortSha = headSha.slice(0, 7)
+            const previewUrl = process.env.PREVIEW_URL
+            const deploymentUrl = process.env.DEPLOYMENT_URL
+            const primaryUrl = previewUrl || deploymentUrl
+            const activeSlugs = JSON.parse(process.env.ACTIVE_SLUGS_JSON || '[]')
+            const missingWebpSlugs = JSON.parse(process.env.MISSING_WEBP_SLUGS_JSON || '[]')
+            const nonThemeFilesCount = Number(process.env.NON_THEME_FILES_COUNT || '0')
+
+            await github.rest.repos.createCommitStatus({
+              owner,
+              repo,
+              sha: headSha,
+              state: 'success',
+              context: 'Cloudflare Preview',
+              description: 'Cloudflare Preview deployed',
+              target_url: primaryUrl || process.env.RUN_URL,
+            })
+
+            const lines = [
+              `### 🚀 Cloudflare 预览已部署（\`${shortSha}\`）`,
+              '',
+              `- **Preview URL**：${primaryUrl}`,
+            ]
+
+            if (deploymentUrl && deploymentUrl !== primaryUrl) {
+              lines.push(`- **Deployment URL**：${deploymentUrl}`)
+            }
+
+            if (activeSlugs.length > 0 && primaryUrl) {
+              const base = primaryUrl.replace(/\/$/, '')
+              lines.push(
+                `- **主题详情页**：${activeSlugs.map((slug) => `[\`${slug}\`](${base}/t/${slug})`).join('、')}`,
+              )
+            }
+
+            if (missingWebpSlugs.length > 0) {
+              lines.push(
+                '',
+                `> 提示：${missingWebpSlugs.map((s) => `\`${s}\``).join('、')} 尚未生成首页 \`.webp\` 样张，可先评论 \`/screenshots\`。`,
+              )
+            }
+
+            if (nonThemeFilesCount > 0) {
+              lines.push(
+                '',
+                `> 安全说明：已忽略该 PR 中 ${nonThemeFilesCount} 个非主题静态文件，仅将 \`public/themes/\` 与 \`public/theme-previews/\` 叠加到可信主分支构建预览。`,
+              )
+            }
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number,
+              body: lines.join('\n'),
+            })
+
+      - name: Report preview failure
+        if: failure() && steps.pr.outputs.proceed == 'true'
+        uses: actions/github-script@v7
+        env:
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          RUN_URL: ${{ steps.pr.outputs.run_url }}
+        with:
+          script: |
+            const { owner, repo } = context.repo
+            const issue_number = context.issue.number
+
+            await github.rest.repos.createCommitStatus({
+              owner,
+              repo,
+              sha: process.env.HEAD_SHA,
+              state: 'failure',
+              context: 'Cloudflare Preview',
+              description: 'Cloudflare Preview failed',
+              target_url: process.env.RUN_URL,
+            })
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number,
+              body: `Cloudflare 预览部署失败，请查看运行日志：${process.env.RUN_URL}`,
+            })
