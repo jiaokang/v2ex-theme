@@ -3,9 +3,12 @@ import { dirname } from 'node:path'
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router'
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { createAgent } from '@ui-sdk/react/agent'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { getLikeCounts, getThemeLike, setThemeLike } from '../likes'
 import { routeTree } from '../routeTree.gen'
+
+const agent = createAgent()
 
 vi.mock('../likes', () => ({
   RATE_LIMITED: 'RATE_LIMITED',
@@ -60,7 +63,7 @@ test('首页每张主题卡片都链接到对应详情，不再提供单选按�
   expect(document.querySelector('iframe')).toBeNull()
 })
 
-test('详情展示匹配的主题、首页离线场景和获取主题的导入代码', async () => {
+test('详情展示匹配的主题、首页离线场景和获取主题按钮', async () => {
   await renderRoute('/t/geist')
   expect(await screen.findByRole('heading', { level: 1, name: 'Geist' })).toBeDefined()
   const tabs = within(screen.getByRole('tablist', { name: '预览场景' }))
@@ -77,22 +80,107 @@ test('详情展示匹配的主题、首页离线场景和获取主题的导入�
   await userEvent.click(screen.getByRole('checkbox', { name: '查看原版' }))
   expect(screen.getByRole('checkbox', { name: '查看原版' }).getAttribute('aria-checked')).toBe('true')
   expect(screen.getByTitle('原样 · 首页预览').getAttribute('srcdoc')).toBe(srcDoc)
-  expect(screen.getByRole('heading', { level: 2, name: '获取主题' })).toBeDefined()
-  expect(screen.getByText(/@import url\(.+\/themes\/geist\/theme\.css\)/)).toBeDefined()
-  expect(screen.getByRole('button', { name: '复制' })).toBeDefined()
+
+  const trigger = screen.getByRole('button', { name: '获取主题' })
+  expect(trigger.hasAttribute('aria-disabled')).toBe(false)
+  expect(screen.queryByRole('dialog')).toBeNull()
+  expect(screen.queryByText(/@import url\(.+\/themes\/geist\/theme\.css\)/)).toBeNull()
   expect(screen.queryByRole('button', { name: '复制 CSS' })).toBeNull()
   expect(screen.queryByRole('link', { name: '下载 CSS' })).toBeNull()
 })
 
-test('点击复制会把 @import 语句写入剪贴板并提示', async () => {
+test('点击获取主题打开弹窗，展示 CSS 代码、复制按钮和使用介绍并正确处理焦点与关闭', async () => {
+  const user = userEvent.setup()
   const writeText = vi.fn().mockResolvedValue(undefined)
   Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+
   await renderRoute('/t/geist')
   await screen.findByRole('heading', { level: 1, name: 'Geist' })
-  await userEvent.click(screen.getByRole('button', { name: '复制' }))
+
+  const trigger = screen.getByRole('button', { name: '获取主题' })
+  await user.click(trigger)
+
+  const dialog = await screen.findByRole('dialog', { name: '获取主题' })
+  const inside = within(dialog)
+  expect(inside.getByText(/@import url\(.+\/themes\/geist\/theme\.css\)/)).toBeDefined()
+  expect(inside.getByRole('heading', { level: 3, name: '如何使用' })).toBeDefined()
+  const settingsLink = inside.getByRole('link', { name: 'https://www.v2ex.com/settings' })
+  expect(settingsLink.getAttribute('href')).toBe('https://www.v2ex.com/settings')
+  expect(settingsLink.getAttribute('target')).toBe('_blank')
+  expect(inside.getByText(/勾选「使用自定义 CSS」/)).toBeDefined()
+  expect(inside.getByText(/把上方 CSS 代码复制进去/)).toBeDefined()
+
+  const copyButton = inside.getByRole('button', { name: '复制' })
+  expect(document.activeElement).toBe(copyButton)
+
+  await user.click(copyButton)
   expect(writeText).toHaveBeenCalledTimes(1)
   expect(writeText.mock.calls[0][0]).toContain('/themes/geist/theme.css')
-  expect(await screen.findByText('已复制到剪贴板。')).toBeDefined()
+  expect(await inside.findByText('已复制到剪贴板。')).toBeDefined()
+
+  await user.click(inside.getByRole('button', { name: '关闭' }))
+  expect(screen.queryByRole('dialog')).toBeNull()
+  expect(document.activeElement).toBe(trigger)
+
+  await user.click(trigger)
+  expect(await screen.findByRole('dialog', { name: '获取主题' })).toBeDefined()
+  expect(screen.queryByText('已复制到剪贴板。')).toBeNull()
+
+  await user.keyboard('{Escape}')
+  expect(screen.queryByRole('dialog')).toBeNull()
+  expect(document.activeElement).toBe(trigger)
+})
+
+test('剪贴板写入失败时弹窗提示手动复制', async () => {
+  const user = userEvent.setup()
+  const writeText = vi.fn().mockRejectedValue(new Error('denied'))
+  Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+
+  await renderRoute('/t/geist')
+  await screen.findByRole('heading', { level: 1, name: 'Geist' })
+  await user.click(screen.getByRole('button', { name: '获取主题' }))
+  const dialog = await screen.findByRole('dialog', { name: '获取主题' })
+
+  await user.click(within(dialog).getByRole('button', { name: '复制' }))
+  expect(await within(dialog).findByText('复制失败，请手动选择复制。')).toBeDefined()
+})
+
+test('Agent 可以发现并操作详情页的获取主题弹窗与复制动作', async () => {
+  const writeText = vi.fn().mockResolvedValue(undefined)
+  Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+
+  await renderRoute('/t/geist')
+  await screen.findByRole('heading', { level: 1, name: 'Geist' })
+
+  const components = agent
+    .snapshot()
+    .filter(entry => !entry.offPage && entry.component !== 'more')
+  for (const entry of components) {
+    expect(entry.label, `${entry.component} ${entry.ref} has no name`).toBeTruthy()
+  }
+  const labels = components.map(entry => entry.label)
+  for (const label of ['获取主题', '点赞', '深色模式', '预览场景', '查看原版']) {
+    expect(labels, `${label} is missing from the snapshot`).toContain(label)
+  }
+
+  const openResult = await agent.act({
+    steps: [{ ref: '获取主题', action: 'open' }],
+  })
+  expect(openResult.ok, openResult.error?.message).toBe(true)
+  expect(await screen.findByRole('dialog', { name: '获取主题' })).toBeDefined()
+
+  const copyResult = await agent.act({
+    steps: [{ ref: '复制', action: 'press' }],
+  })
+  expect(copyResult.ok, copyResult.error?.message).toBe(true)
+  expect(writeText).toHaveBeenCalledTimes(1)
+  expect(writeText.mock.calls[0][0]).toContain('/themes/geist/theme.css')
+
+  const closeResult = await agent.act({
+    steps: [{ ref: '获取主题', action: 'close' }],
+  })
+  expect(closeResult.ok, closeResult.error?.message).toBe(true)
+  expect(screen.queryByRole('dialog')).toBeNull()
 })
 
 test('无效主题显示未找到页面', async () => {

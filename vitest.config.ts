@@ -3,5 +3,8 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [viteReact()],
-  test: { environment: 'jsdom' },
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
+  },
 })
