@@ -1,6 +1,8 @@
 import '@ui-sdk/core/web.css'
 import { HeadContent, Link, Scripts, createRootRoute } from '@tanstack/react-router'
 import ArrowUpRight from 'lucide-react/icons/arrow-up-right'
+import Palette from 'lucide-react/icons/palette'
+import Sparkles from 'lucide-react/icons/sparkles'
 
 import { ThemeModeToggle, colorModeInitScript } from '../components/theme-mode-toggle'
 import { siteDescription, siteName } from '../site'
@@ -17,7 +19,7 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: `${siteName} · 社区主题图册`,
+        title: `${siteName} · 社区主题库`,
       },
       {
         name: 'description',
@@ -59,9 +61,28 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               {siteName}
             </Link>
             <div className="site-topbar-end">
-              <nav className="site-nav" aria-label="主题导航">
-                <span role="link" aria-disabled="true">提交主题</span>
-                <span role="link" aria-disabled="true">创作主题</span>
+              <nav className="site-nav" aria-label="主导航">
+                <Link className="site-nav-link" to="/" hash="features">特性</Link>
+                <Link className="site-nav-link" to="/" hash="faq">常见问题</Link>
+                <a
+                  className="site-nav-link"
+                  href="https://github.com/yuyinws/v2ex-theme"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  GitHub
+                  <ArrowUpRight className="ui-icon" aria-hidden="true" />
+                </a>
+                <div className="site-nav-actions">
+                  <Link className="brutal-btn brutal-btn-sm brutal-btn-secondary" to="/" hash="create-theme">
+                    <Sparkles className="ui-icon" aria-hidden="true" />
+                    创作主题
+                  </Link>
+                  <Link className="brutal-btn brutal-btn-sm brutal-btn-primary" to="/themes">
+                    <Palette className="ui-icon" aria-hidden="true" />
+                    查看主题
+                  </Link>
+                </div>
               </nav>
               <ThemeModeToggle />
             </div>
@@ -77,17 +98,33 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               </div>
               <nav className="site-footer-nav" aria-label="页脚导航">
                 <div className="site-footer-group">
-                  <span>图册</span>
+                  <span>探索</span>
                   <ul>
-                    <li><Link to="/" hash="theme-catalog">全部主题</Link></li>
+                    <li><Link to="/themes">查看主题</Link></li>
+                    <li><Link to="/" hash="features">核心特性</Link></li>
+                    <li><Link to="/" hash="create-theme">创作主题</Link></li>
+                    <li><Link to="/" hash="faq">常见问题</Link></li>
                   </ul>
                 </div>
                 <div className="site-footer-group">
                   <span>项目</span>
                   <ul>
                     <li>
-                      <a href="https://github.com/yuyinws/v2ex-theme">
+                      <a
+                        href="https://github.com/yuyinws/v2ex-theme"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         GitHub<ArrowUpRight className="ui-icon" aria-hidden="true" />
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="https://www.v2ex.com/settings"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        V2EX 设置页<ArrowUpRight className="ui-icon" aria-hidden="true" />
                       </a>
                     </li>
                   </ul>
@@ -95,7 +132,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               </nav>
             </div>
             <div className="site-footer-bottom">
-              <p>独立主题图册，与 V2EX 官方无关。</p>
+              <p>独立 V2EX 社区主题库，与 V2EX 官方无关。</p>
             </div>
           </div>
         </footer>

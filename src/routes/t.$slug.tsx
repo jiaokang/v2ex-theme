@@ -57,7 +57,7 @@ function ThemeDetail() {
 
 function BackToGallery() {
   return (
-    <Link className="detail-back" to="/" hash="theme-catalog">
+    <Link className="detail-back" to="/themes">
       <ArrowLeft className="ui-icon" aria-hidden="true" />全部主题
     </Link>
   )

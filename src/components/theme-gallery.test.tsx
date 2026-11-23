@@ -47,11 +47,29 @@ async function renderRoute(path: string) {
   render(<RouterProvider router={router} />)
 }
 
-test('首页每张主题卡片都链接到对应详情，不再提供单选按钮', async () => {
+test('首页以 Landing Page 呈现查看主题与创作主题入口，并展示热门 Top 3 主题', async () => {
   await renderRoute('/')
-  expect(await screen.findByRole('heading', { level: 1, name: 'V2EX Theme Hub' })).toBeDefined()
-  for (const { id, name, author, description } of themes) {
-    const link = screen.getByRole('link', { name })
+  expect(await screen.findByRole('heading', { level: 1, name: /给你的 V2EX/ })).toBeDefined()
+
+  const hero = document.querySelector('[data-home-hero="true"]') as HTMLElement
+  const browseLink = within(hero).getByRole('link', { name: '查看主题' })
+  const createLink = within(hero).getByRole('link', { name: '创作主题' })
+  expect(browseLink.getAttribute('href')).toBe('/themes')
+  expect(createLink.getAttribute('href')).toBe('/#create-theme')
+
+  const featuredSection = document.querySelector('#featured-themes') as HTMLElement
+  expect(within(featuredSection).getByRole('link', { name: `查看全部主题（${themes.length}）` }).getAttribute('href'))
+    .toBe('/themes')
+
+  const finalCta = document.querySelector('[data-final-cta="true"]') as HTMLElement
+  expect(within(finalCta).getByRole('link', { name: '查看主题' }).getAttribute('href')).toBe('/themes')
+  expect(within(finalCta).getByRole('link', { name: '创作主题' }).getAttribute('href')).toBe('/#create-theme')
+
+  const grid = document.querySelector('.theme-grid') as HTMLElement
+  const featuredLinks = within(grid).getAllByRole('link')
+  expect(featuredLinks.length).toBe(Math.min(3, themes.length))
+  for (const { id, name, author, description } of themes.slice(0, 3)) {
+    const link = within(grid).getByRole('link', { name })
     const card = within(link)
     expect(link.getAttribute('href')).toBe(`/t/${id}`)
     expect(card.getByRole('img', { name: `${name} 主题的 V2EX 首页样张` }).getAttribute('src'))
@@ -63,9 +81,106 @@ test('首页每张主题卡片都链接到对应详情，不再提供单选按�
   expect(document.querySelector('iframe')).toBeNull()
 })
 
+test('全部主题页展示所有主题卡片，按点赞数排序并在 D1 不可用时降级展示', async () => {
+  const [first, second, third] = themes
+  vi.mocked(getLikeCounts).mockResolvedValue({ [third.id]: 9, [second.id]: 4 })
+  await renderRoute('/themes')
+  expect(await screen.findByRole('heading', { level: 1, name: new RegExp(`全部主题\\s*${themes.length}`) })).toBeDefined()
+
+  const grid = document.querySelector('.theme-grid') as HTMLElement
+  const order = within(grid).getAllByRole('link').map(link => link.getAttribute('href'))
+  expect(order.slice(0, 3)).toEqual([`/t/${third.id}`, `/t/${second.id}`, `/t/${first.id}`])
+  for (const { id, name, author, description } of themes) {
+    const link = within(grid).getByRole('link', { name })
+    const card = within(link)
+    expect(link.getAttribute('href')).toBe(`/t/${id}`)
+    expect(card.getByRole('img', { name: `${name} 主题的 V2EX 首页样张` }).getAttribute('src'))
+      .toBe(`/theme-previews/${id}.webp`)
+    expect(card.getByText(author, { exact: true })).toBeDefined()
+    expect(card.getByText(description, { exact: true })).toBeDefined()
+  }
+  expect(within(grid).getByRole('link', { name: third.name }).querySelector('.theme-card-likes')?.textContent)
+    .toBe('9 个赞')
+  expect(screen.queryByRole('radio')).toBeNull()
+  expect(document.querySelector('iframe')).toBeNull()
+
+  cleanup()
+  vi.mocked(getLikeCounts).mockRejectedValue(new Error('no db'))
+  await renderRoute('/themes')
+  expect(await screen.findByRole('link', { name: themes[0].name })).toBeDefined()
+  expect(screen.queryByText(/个赞/)).toBeNull()
+})
+
+test('首页支持切换精选主题预览、复制创作 Skill 命令及展开常见问题', async () => {
+  const user = userEvent.setup()
+  const writeText = vi.fn().mockResolvedValue(undefined)
+  Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+
+  await renderRoute('/')
+  await screen.findByRole('heading', { level: 1, name: /给你的 V2EX/ })
+
+  const previewTabs = within(screen.getByRole('tablist', { name: '精选主题预览' }))
+  const secondTheme = themes[1]
+  await user.click(previewTabs.getByRole('tab', { name: secondTheme.name }))
+  expect(previewTabs.getByRole('tab', { name: secondTheme.name, selected: true })).toBeDefined()
+  expect(screen.getByRole('link', { name: `查看 ${secondTheme.name} 详情` }).getAttribute('href'))
+    .toBe(`/t/${secondTheme.id}`)
+
+  await user.click(screen.getByRole('button', { name: '复制安装命令' }))
+  expect(writeText).toHaveBeenCalledWith('npx skills add yuyinws/v2ex-theme')
+  expect(await screen.findByText('已复制安装命令。')).toBeDefined()
+
+  const faqTrigger = screen.getByRole('button', { name: '主题更新后，我需要重新复制代码吗？' })
+  expect(faqTrigger.getAttribute('aria-expanded')).toBe('false')
+  await user.click(faqTrigger)
+  expect(faqTrigger.getAttribute('aria-expanded')).toBe('true')
+  expect(screen.getByText(/由 Cloudflare Workers 分发/)).toBeDefined()
+})
+
+test('Agent 可以发现并操作首页的预览标签、复制命令与常见问题手风琴', async () => {
+  const writeText = vi.fn().mockResolvedValue(undefined)
+  Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+
+  await renderRoute('/')
+  await screen.findByRole('heading', { level: 1, name: /给你的 V2EX/ })
+
+  const components = agent
+    .snapshot()
+    .filter(entry => !entry.offPage && entry.component !== 'more')
+  for (const entry of components) {
+    expect(entry.label, `${entry.component} ${entry.ref} has no name`).toBeTruthy()
+  }
+  const labels = components.map(entry => entry.label)
+  for (const label of ['深色模式', '精选主题预览', '复制安装命令', '常见问题']) {
+    expect(labels, `${label} is missing from the snapshot`).toContain(label)
+  }
+
+  const previewEntry = components.find(entry => entry.label === '精选主题预览')
+  const secondTabLabel = previewEntry?.items?.[1]?.label
+  expect(secondTabLabel).toBeTruthy()
+
+  const faqEntry = components.find(entry => entry.label === '常见问题')
+  const secondFaq = faqEntry?.items?.[1]
+  expect(secondFaq?.value).toBeTruthy()
+  expect(secondFaq?.label).toBeTruthy()
+
+  const result = await agent.act({
+    steps: [
+      { ref: '精选主题预览', action: 'setValue', args: [secondTabLabel!] },
+      { ref: '复制安装命令', action: 'press' },
+      { ref: '常见问题', action: 'open', args: [secondFaq!.value] },
+    ],
+  })
+  expect(result.ok, result.error?.message).toBe(true)
+  expect(writeText).toHaveBeenCalledWith('npx skills add yuyinws/v2ex-theme')
+  expect(screen.getByRole('tab', { name: secondTabLabel!, selected: true })).toBeDefined()
+  expect(screen.getByRole('button', { name: secondFaq!.label! }).getAttribute('aria-expanded')).toBe('true')
+})
+
 test('详情展示匹配的主题、首页离线场景和获取主题按钮', async () => {
   await renderRoute('/t/geist')
   expect(await screen.findByRole('heading', { level: 1, name: 'Geist' })).toBeDefined()
+  expect(screen.getByRole('link', { name: '全部主题' }).getAttribute('href')).toBe('/themes')
   const tabs = within(screen.getByRole('tablist', { name: '预览场景' }))
   expect(tabs.getAllByRole('tab').map(tab => tab.textContent)).toEqual(['首页', '帖子详情', '设置页'])
   expect(tabs.getByRole('tab', { name: '首页', selected: true })).toBeDefined()
@@ -192,11 +307,12 @@ test('首页按点赞数排序并展示计数，卡片上不能点赞', async ()
   const [first, second, third] = themes
   vi.mocked(getLikeCounts).mockResolvedValue({ [third.id]: 7, [second.id]: 2 })
   await renderRoute('/')
-  await screen.findByRole('heading', { level: 1, name: 'V2EX Theme Hub' })
-  const order = within(document.querySelector('.theme-grid') as HTMLElement)
+  await screen.findByRole('heading', { level: 1, name: /给你的 V2EX/ })
+  const grid = document.querySelector('.theme-grid') as HTMLElement
+  const order = within(grid)
     .getAllByRole('link').map(link => link.getAttribute('href'))
   expect(order.slice(0, 3)).toEqual([`/t/${third.id}`, `/t/${second.id}`, `/t/${first.id}`])
-  const likesOf = (name: string) => screen.getByRole('link', { name }).querySelector('.theme-card-likes')?.textContent
+  const likesOf = (name: string) => within(grid).getByRole('link', { name }).querySelector('.theme-card-likes')?.textContent
   expect(likesOf(third.name)).toBe('7 个赞')
   expect(likesOf(first.name)).toBe('0 个赞')
   expect(screen.queryByText('按点赞数排序')).toBeNull()
