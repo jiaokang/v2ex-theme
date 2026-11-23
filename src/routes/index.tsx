@@ -24,7 +24,6 @@ function Home() {
       <section id="theme-catalog" aria-labelledby="gallery-title">
         <div className="gallery-heading">
           <h2 id="gallery-title">全部主题 <span>{themes.length}</span></h2>
-          {counts && <p>按点赞数排序</p>}
         </div>
         <div className="theme-grid">
           {ordered.map(({ id, name, author, description }) => (

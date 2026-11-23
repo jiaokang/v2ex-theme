@@ -14,7 +14,8 @@
     "test": "vitest run",
     "db:migrate:local": "wrangler d1 migrations apply v2ex-theme --local",
     "db:migrate:remote": "wrangler d1 migrations apply v2ex-theme --remote",
-    "screenshots:themes": "node scripts/capture-theme-previews.mjs"
+    "screenshots:themes": "node scripts/capture-theme-previews.mjs",
+    "sync:skill-fixtures": "node scripts/sync-skill-fixtures.mjs"
   },
   "dependencies": {
     "@botiverse/raft-ui": "^0.102.18",

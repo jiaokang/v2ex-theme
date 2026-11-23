@@ -199,7 +199,7 @@ test('首页按点赞数排序并展示计数，卡片上不能点赞', async ()
   const likesOf = (name: string) => screen.getByRole('link', { name }).querySelector('.theme-card-likes')?.textContent
   expect(likesOf(third.name)).toBe('7 个赞')
   expect(likesOf(first.name)).toBe('0 个赞')
-  expect(screen.getByText('按点赞数排序')).toBeDefined()
+  expect(screen.queryByText('按点赞数排序')).toBeNull()
   expect(screen.queryByRole('button', { name: '点赞' })).toBeNull()
 })
 
