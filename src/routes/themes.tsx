@@ -9,12 +9,20 @@ import { themes } from '../themes'
 export const Route = createFileRoute('/themes')({
   // Counts are decoration: the catalog still renders, unsorted and without them, if D1 is unavailable.
   loader: async () => ({ counts: await getLikeCounts().catch(() => null) }),
-  head: () => ({
-    meta: [
-      { title: `全部主题 · ${siteName}` },
-      { name: 'description', content: `浏览 ${siteName} 收录的全部 V2EX 社区主题，支持多场景在线预览与一键导入。` },
-    ],
-  }),
+  head: () => {
+    const title = `全部主题 · ${siteName}`
+    const description = `浏览 ${siteName} 收录的全部 V2EX 社区主题，支持多场景在线预览与一键导入。`
+    return {
+      meta: [
+        { title },
+        { name: 'description', content: description },
+        { property: 'og:title', content: title },
+        { property: 'og:description', content: description },
+        { name: 'twitter:title', content: title },
+        { name: 'twitter:description', content: description },
+      ],
+    }
+  },
   component: ThemesPage,
 })
 

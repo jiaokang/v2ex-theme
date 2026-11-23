@@ -3,6 +3,7 @@
 @import '@botiverse/raft-ui/foundation.css';
 @import '@fontsource-variable/space-grotesk';
 @import '@fontsource/space-mono/latin-400.css';
+@import '@fontsource/space-mono/latin-700.css';
 
 @layer ui-sdk {
   :where([data-slot][hidden]:not([hidden='until-found'])) {
@@ -21,6 +22,7 @@
   --brutal-border: var(--line-strong);
   --brutal-shadow-xs: 1px 1px 0 var(--line-strong);
   --brutal-shadow-sm: 2px 2px 0 var(--line-strong);
+  --brutal-shadow-md: 3px 3px 0 var(--line-strong);
   --brutal-shadow: 4px 4px 0 var(--line-strong);
   --ui-background: var(--layer-canvas);
   --ui-foreground: var(--foreground);
@@ -43,6 +45,7 @@
   --brutal-border: var(--line-seam);
   --brutal-shadow-xs: 1px 1px 0 #000;
   --brutal-shadow-sm: 2px 2px 0 #000;
+  --brutal-shadow-md: 3px 3px 0 #000;
   --brutal-shadow: 4px 4px 0 #000;
 }
 
@@ -51,6 +54,7 @@
     --brutal-border: var(--line-seam);
     --brutal-shadow-xs: 1px 1px 0 #000;
     --brutal-shadow-sm: 2px 2px 0 #000;
+    --brutal-shadow-md: 3px 3px 0 #000;
     --brutal-shadow: 4px 4px 0 #000;
   }
 }
@@ -349,7 +353,9 @@ body {
 }
 
 .landing-hero {
-  background: var(--layer-sidebar);
+  background:
+    radial-gradient(circle, var(--ink-6) 1px, transparent 1px) 0 0 / 22px 22px,
+    var(--layer-sidebar);
   padding: clamp(3rem, 7vw, 5.25rem) 0 clamp(3.5rem, 8vw, 5.75rem);
 }
 
@@ -370,15 +376,24 @@ body {
 .landing-eyebrow {
   display: inline-flex;
   align-items: center;
+  gap: 8px;
   width: fit-content;
   margin: 0;
-  padding: 5px 10px;
-  border: 1.5px solid var(--brutal-border);
+  padding: 6px 12px;
+  border: 2px solid var(--brutal-border);
   background: var(--layer-card);
   color: var(--foreground);
-  font: 400 0.75rem/1.2 var(--font-mono);
+  font: 700 0.8125rem/1.2 var(--font-mono);
   letter-spacing: 0.02em;
-  box-shadow: var(--brutal-shadow-sm);
+  box-shadow: var(--brutal-shadow-md);
+}
+
+.landing-eyebrow-dot {
+  inline-size: 8px;
+  block-size: 8px;
+  flex: none;
+  border: 1.5px solid var(--brutal-border);
+  background: var(--brand-400);
 }
 
 .landing-hero-copy h1 {

@@ -41,6 +41,9 @@ pnpm db:migrate:local
 # 重新生成首页主题样张（需先安装 chromium：npx playwright install chromium）
 pnpm screenshots:themes
 
+# 重新生成站点 OG 分享图（public/og-image.png）
+pnpm og:image
+
 # 同步 Skill 离线样本（修改 scripts/fixtures/ 后执行）
 pnpm sync:skill-fixtures
 

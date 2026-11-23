@@ -24,12 +24,21 @@ export const Route = createFileRoute('/t/$slug')({
     ])
     return { theme, css, like }
   },
-  head: ({ loaderData }) => loaderData ? {
-    meta: [
-      { title: `${loaderData.theme.name} · ${siteName}` },
-      { name: 'description', content: loaderData.theme.description },
-    ],
-  } : {},
+  head: ({ loaderData }) => {
+    if (!loaderData) return {}
+    const title = `${loaderData.theme.name} · ${siteName}`
+    const description = loaderData.theme.description
+    return {
+      meta: [
+        { title },
+        { name: 'description', content: description },
+        { property: 'og:title', content: title },
+        { property: 'og:description', content: description },
+        { name: 'twitter:title', content: title },
+        { name: 'twitter:description', content: description },
+      ],
+    }
+  },
   component: ThemeDetail,
   notFoundComponent: ThemeNotFound,
 })

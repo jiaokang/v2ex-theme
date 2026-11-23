@@ -58,7 +58,10 @@ function Home() {
         <div className="landing-container">
           <div className="landing-hero-grid">
             <div className="landing-hero-copy">
-              <p className="landing-eyebrow">{siteName} · 社区主题库</p>
+              <p className="landing-eyebrow">
+                <span className="landing-eyebrow-dot" aria-hidden="true" />
+                {siteName} · 社区主题库
+              </p>
               <h1>
                 挑一套主题，
                 <br />

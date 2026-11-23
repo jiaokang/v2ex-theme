@@ -1,48 +1,63 @@
 import '@ui-sdk/core/web.css'
 import { HeadContent, Link, Scripts, createRootRoute } from '@tanstack/react-router'
+import { createIsomorphicFn } from '@tanstack/react-start'
+import { getRequestUrl } from '@tanstack/react-start/server'
 import ArrowUpRight from 'lucide-react/icons/arrow-up-right'
 import Palette from 'lucide-react/icons/palette'
 import Sparkles from 'lucide-react/icons/sparkles'
 
 import { ThemeModeToggle, colorModeInitScript } from '../components/theme-mode-toggle'
-import { siteDescription, siteName } from '../site'
+import { createSocialMeta, siteDescription, siteName, siteTitle } from '../site'
 import appCss from '../styles.css?url'
 
+const getRequestOrigin = createIsomorphicFn()
+  .server(() => {
+    try {
+      return getRequestUrl().origin
+    } catch {
+      return ''
+    }
+  })
+  .client(() => (typeof window !== 'undefined' ? window.location.origin : ''))
+
 export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      {
-        charSet: 'utf-8',
-      },
-      {
-        name: 'viewport',
-        content: 'width=device-width, initial-scale=1',
-      },
-      {
-        title: `${siteName} · 社区主题库`,
-      },
-      {
-        name: 'description',
-        content: siteDescription,
-      },
-    ],
-    links: [
-      {
-        rel: 'icon',
-        href: '/favicon.ico',
-        sizes: '32x32',
-      },
-      {
-        rel: 'icon',
-        href: '/favicon.svg',
-        type: 'image/svg+xml',
-      },
-      {
-        rel: 'stylesheet',
-        href: appCss,
-      },
-    ],
-  }),
+  loader: () => ({ origin: getRequestOrigin() }),
+  head: ({ loaderData, matches }) => {
+    const pathname = matches[matches.length - 1]?.pathname ?? '/'
+    return {
+      meta: [
+        {
+          charSet: 'utf-8',
+        },
+        {
+          name: 'viewport',
+          content: 'width=device-width, initial-scale=1',
+        },
+        ...createSocialMeta({
+          title: siteTitle,
+          description: siteDescription,
+          origin: loaderData?.origin,
+          pathname,
+        }),
+      ],
+      links: [
+        {
+          rel: 'icon',
+          href: '/favicon.ico',
+          sizes: '32x32',
+        },
+        {
+          rel: 'icon',
+          href: '/favicon.svg',
+          type: 'image/svg+xml',
+        },
+        {
+          rel: 'stylesheet',
+          href: appCss,
+        },
+      ],
+    }
+  },
   shellComponent: RootDocument,
 })
 
