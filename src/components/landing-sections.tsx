@@ -130,10 +130,7 @@ export function HeroShowcase({ themes }: { themes: ThemeSummary[] }) {
               />
             </div>
             <div className="hero-showcase-footer">
-              <div className="hero-showcase-caption">
-                <p>{description}</p>
-                <code>@import url(.../themes/{id}/theme.css)</code>
-              </div>
+              <p className="hero-showcase-caption">{description}</p>
               <Link
                 className="hero-showcase-link"
                 to="/t/$slug"

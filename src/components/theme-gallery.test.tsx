@@ -49,7 +49,7 @@ async function renderRoute(path: string) {
 
 test('首页以 Landing Page 呈现查看主题与创作主题入口，并展示热门 Top 3 主题', async () => {
   await renderRoute('/')
-  expect(await screen.findByRole('heading', { level: 1, name: /给你的 V2EX/ })).toBeDefined()
+  expect(await screen.findByRole('heading', { level: 1, name: /挑一套主题/ })).toBeDefined()
 
   const hero = document.querySelector('[data-home-hero="true"]') as HTMLElement
   const browseLink = within(hero).getByRole('link', { name: '查看主题' })
@@ -117,7 +117,7 @@ test('首页支持切换精选主题预览、复制创作 Skill 命令及展开�
   Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
 
   await renderRoute('/')
-  await screen.findByRole('heading', { level: 1, name: /给你的 V2EX/ })
+  await screen.findByRole('heading', { level: 1, name: /挑一套主题/ })
 
   const previewTabs = within(screen.getByRole('tablist', { name: '精选主题预览' }))
   const secondTheme = themes[1]
@@ -142,7 +142,7 @@ test('Agent 可以发现并操作首页的预览标签、复制命令与常见�
   Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
 
   await renderRoute('/')
-  await screen.findByRole('heading', { level: 1, name: /给你的 V2EX/ })
+  await screen.findByRole('heading', { level: 1, name: /挑一套主题/ })
 
   const components = agent
     .snapshot()
@@ -307,7 +307,7 @@ test('首页按点赞数排序并展示计数，卡片上不能点赞', async ()
   const [first, second, third] = themes
   vi.mocked(getLikeCounts).mockResolvedValue({ [third.id]: 7, [second.id]: 2 })
   await renderRoute('/')
-  await screen.findByRole('heading', { level: 1, name: /给你的 V2EX/ })
+  await screen.findByRole('heading', { level: 1, name: /挑一套主题/ })
   const grid = document.querySelector('.theme-grid') as HTMLElement
   const order = within(grid)
     .getAllByRole('link').map(link => link.getAttribute('href'))

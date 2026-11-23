@@ -46,7 +46,7 @@ const svgPlaceholder = (width, height, fill = 'none') =>
 const isNodeAvatar = value => /^https:\/\/cdn\.v2ex\.com\/navatar\//.test(value)
 const roots = root => [root, ...[...root.querySelectorAll('template')].flatMap(el => roots(el.content))]
 const isPublicAsset = value => /^(?:\/static\/(?:img|fonts)\/|https:\/\/www\.v2ex\.com\/static\/(?:img|fonts)\/|https:\/\/fonts\.gstatic\.com\/s\/)/.test(value)
-const documentCsp = "default-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src data:; base-uri 'none'; form-action 'none'; object-src 'none'"
+const documentCsp = "default-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src data: https://fonts.gstatic.com; base-uri 'none'; form-action 'none'; object-src 'none'"
 const toCss = text => text.replace(/<(?=\/style)/gi, '\\3c ')
 
 const USER_POOL = [

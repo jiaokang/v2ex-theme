@@ -1,2 +1,2 @@
 export const siteName = 'V2EX Theme Hub'
-export const siteDescription = '给你的 v2ex 换个主题'
+export const siteDescription = '挑一套主题，定义你的 V2EX。'

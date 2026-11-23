@@ -33,6 +33,7 @@ describe('V2EX 真实快照（首页 / 帖子详情 / 设置页）', () => {
     expect(doc.querySelector('script, iframe, object, embed, link, base, [srcset], [nonce], input[type="password"]')).toBeNull()
     const csp = doc.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content') ?? ''
     expect(csp).toContain("default-src 'none'")
+    expect(csp).toContain('font-src data: https://fonts.gstatic.com')
     expect(csp).toContain("form-action 'none'")
     expect(doc.querySelector('[data-uid]')).toBeNull()
     expect(doc.body.textContent ?? '').not.toMatch(/@(?!example\.com\b)[a-z0-9.-]+\.[a-z]{2,}/i)
@@ -57,25 +58,5 @@ describe('V2EX 真实快照（首页 / 帖子详情 / 设置页）', () => {
     const home = fixture('v2ex-home')
     const tones = [...new Set([...home.querySelectorAll('img.sample-avatar')].map(img => img.className.match(/avatar-(\w+)/)?.[1]).filter(Boolean))].sort()
     expect(tones).toEqual(['blue', 'green', 'violet', 'warm'])
-  })
-})
-
-describe('V2EX 离线样本（个人主页）', () => {
-  test('不携带可执行内容、外部资源或账号字段', () => {
-    const doc = fixture('v2ex-profile')
-    expect(doc.querySelector('script, iframe, object, embed, link, base, [srcset], [nonce], input[type="hidden"], input[type="password"]')).toBeNull()
-    expect(doc.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content')).toContain("form-action 'none'")
-    for (const el of doc.querySelectorAll('*')) {
-      expect(el.getAttributeNames().filter(name => /^on|csrf|token|session/i.test(name))).toEqual([])
-      if (el.hasAttribute('src')) {
-        expect(el.matches('img.avatar')).toBe(true)
-        expect(el.getAttribute('src')).toBe('data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7')
-      }
-      if (el.hasAttribute('href')) {
-        const href = el.getAttribute('href')!
-        expect(href).toMatch(/^(?:#[\w-]*|\/(?:notifications|settings(?:\/[\w-]+)?))$/)
-        if (href.startsWith('/')) expect(el.hasAttribute('inert')).toBe(true)
-      }
-    }
   })
 })

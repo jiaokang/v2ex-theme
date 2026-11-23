@@ -522,23 +522,12 @@ body {
 }
 
 .hero-showcase-caption {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex: 1 1 14rem;
   min-width: 0;
-}
-
-.hero-showcase-caption p {
   margin: 0;
   color: var(--foreground-muted);
   font-size: 0.875rem;
-  line-height: 1.45;
-}
-
-.hero-showcase-caption code {
-  color: var(--foreground-hint);
-  font: 400 0.75rem/1.4 var(--font-mono);
-  word-break: break-all;
+  line-height: 1.5;
 }
 
 .hero-showcase-link {

@@ -60,11 +60,9 @@ function Home() {
             <div className="landing-hero-copy">
               <p className="landing-eyebrow">{siteName} · 社区主题库</p>
               <h1>
-                给你的 V2EX
+                挑一套主题，
                 <br />
-                换一套顺眼的
-                <br />
-                社区主题。
+                定义你的 V2EX。
               </h1>
               <p className="landing-hero-lead">
                 精选开源社区主题，在线预览并一键应用到 V2EX。
@@ -146,7 +144,7 @@ function Home() {
 
       <section className="landing-final-cta" data-final-cta="true" aria-labelledby="final-cta-title">
         <div className="landing-container landing-container-narrow">
-          <h2 id="final-cta-title">准备好给 V2EX 换新装了吗？</h2>
+          <h2 id="final-cta-title">准备好定义你的 V2EX 了吗？</h2>
           <p>挑一套喜欢的主题立刻启用，或亲手创作你的下一套社区精选。</p>
           <div className="landing-cta-group landing-cta-group-center">
             <Link className="brutal-btn brutal-btn-primary" to="/themes">
