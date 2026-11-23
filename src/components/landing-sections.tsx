@@ -60,10 +60,10 @@ const FAQ_ITEMS = [
     ],
   },
   {
-    value: 'dark-and-mobile',
-    question: '支持深色模式和手机端浏览吗？',
+    value: 'dark-mode',
+    question: '支持深色模式吗？',
     paragraphs: [
-      '支持。收录主题遵循统一的 V2EX 选择器与变量规范，默认同时适配浅色与夜间模式，并针对 840px、520px 等窄屏宽度做过排版校验。',
+      '支持。收录主题遵循统一的 V2EX 选择器与变量规范，默认同时适配浅色与夜间模式。',
     ],
   },
   {

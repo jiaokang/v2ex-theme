@@ -35,9 +35,9 @@ const FEATURE_CARDS = [
     id: 'dual-mode',
     tone: 'lime',
     Icon: SunMoon,
-    title: '深浅双色与窄屏适配',
-    description: '统一映射 V2EX 原生变量与夜间模式钩子，覆盖代码块排印、楼中楼回复与移动端窄屏断点。',
-    tag: 'Light + Dark + Mobile',
+    title: '深浅双色适配',
+    description: '统一映射 V2EX 原生变量与夜间模式钩子，覆盖列表卡片、代码块排印与楼中楼回复等细节。',
+    tag: 'Light + Dark',
   },
 ] as const
 
