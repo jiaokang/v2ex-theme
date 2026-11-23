@@ -1,45 +1,50 @@
-# v2ex-theme
+# V2EX Theme Hub
 
-使用 TanStack Start、React 和 ui-sdk 的 V2EX 主题图册。
+开源的 V2EX 纯 CSS 主题库与在线预览站点，内置 AI Agent Skill，支持快速创作、离线预览并一键投稿 PR。
+
+- **一行启用**：在详情页复制 `@import`，粘贴到 [V2EX 设置页](https://www.v2ex.com/settings) 的「使用自定义 CSS」即可生效。
+- **离线实景预览**：详情页内置首页、帖子详情与设置页三个脱敏离线样本，无脚本沙箱渲染，支持原版对照。
+- **深浅色与窄屏适配**：统一适配 V2EX 浅色/夜间模式与移动端窄屏。
+- **AI 创作与投稿**：无需克隆仓库即可生成主题、视觉自检并提交 PR。
+
+## 创作与投稿
+
+### 使用 Agent Skill（推荐）
 
 ```bash
-npm install
-npm run dev
+npx skills add yuyinws/v2ex-theme
 ```
 
-## 生成主题样张
+- `/v2ex-theme-create`：根据描述生成纯 CSS 主题，并自动完成多场景视觉自检与本地预览。
+- `/v2ex-theme-submit`：校验主题并通过 GitHub API 免克隆提交 PR。
 
-新增主题时，在 `public/themes/<slug>/` 放入 `theme.css` 和 `theme.json`，不需要修改首页。目录名是主题的稳定 ID；首页按目录名排列，直接读取 `theme.json` 的 `name`、`author` 和 `description`。两个文件构建后可从 `/themes/<slug>/` 直接访问。新增主题或修改主题 CSS、离线样本后，重新生成首页样张：
+### 手动提交
+
+在 `public/themes/<slug>/` 中添加 `theme.css` 与 `theme.json`（含 `name`、`author`、`description`），无需修改页面代码或手动生成 `.webp` 样张。
+
+## 本地开发
+
+基于 TanStack Start、React、ui-sdk 与 Cloudflare Workers / D1 构建。
 
 ```bash
-npx playwright install chromium
-npm run screenshots:themes
+pnpm install
+pnpm dev
 ```
 
-脚本为每个包含 `theme.json` 的目录生成样张，用固定视口和亮色模式把对应 CSS 套到同一份离线 V2EX 首页样本，并禁用网络请求。生成的 WebP 位于 `public/theme-previews/<slug>.webp`，应用构建直接使用这些文件，不启动浏览器。离线生成使用本机字体回退，不同系统的字形可能略有差异。
-
-`/t/<slug>` 详情页提供首页、帖子详情和设置页三个离线场景。渲染时直接加载对应的自包含离线样本，再把主题 CSS 放入无脚本的沙箱 iframe（仅允许 `data:` 与 `https://fonts.gstatic.com` 字体）；原样对照保留相同样本。设置控件不可提交，仓库不保留原始导出。
-
-## 主题点赞
-
-点赞存放在 Cloudflare D1（绑定名 `DB`），表结构见 `migrations/`。首页按点赞数降序排列并显示计数，只有详情页能点赞或取消。访客用一个 `httpOnly` 匿名 cookie 区分，库里只存它的 HMAC；写入按 IP 限流（`LIKE_LIMITER`，每分钟 20 次）。这是软去重：清 cookie 或换浏览器可以再赞一次。D1 不可用时，首页照常展示，只是不排序、不显示计数。
-
-本地开发前准备一次：
+常用命令：
 
 ```bash
+# 本地初始化 D1 点赞数据库（首次部署用 wrangler secret put LIKE_SECRET + db:migrate:remote）
 echo "LIKE_SECRET=$(openssl rand -hex 32)" > .dev.vars
-npm run db:migrate:local
-```
+pnpm db:migrate:local
 
-首次部署前设置密钥并建表：
+# 重新生成首页主题样张（需先安装 chromium：npx playwright install chromium）
+pnpm screenshots:themes
 
-```bash
-npx wrangler secret put LIKE_SECRET
-npm run db:migrate:remote
-```
+# 同步 Skill 离线样本（修改 scripts/fixtures/ 后执行）
+pnpm sync:skill-fixtures
 
-## 构建
-
-```bash
-npm run build
+# 测试与构建
+pnpm test
+pnpm build
 ```

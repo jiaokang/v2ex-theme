@@ -385,13 +385,215 @@ async function prepare(sceneKey, scene) {
   console.log(`${scene.output}: CSS ${css.length} 份, 图片 ${d.images.length} 张, 公共资源 ${names.length - missing.length}/${names.length}${missing.length ? `, 未取到 ${missing.join(', ')}` : ''}`)
 }
 
-const targets = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(SCENES)
-for (const name of targets) {
-  if (!SCENES[name]) {
-    console.error(`未知场景：${name}（可选：${Object.keys(SCENES).join(', ')}）`)
-    process.exit(1)
+const TIMEZONE_KEEP = new Set([
+  'UTC',
+  'Asia/Shanghai',
+  'Asia/Hong_Kong',
+  'Asia/Tokyo',
+  'Asia/Singapore',
+  'Europe/London',
+  'America/New_York',
+  'America/Los_Angeles',
+])
+
+const CSS_ASSET_KEEP_SELECTORS = [
+  '#Logo',
+  '#LogoMobile',
+  '#search-container',
+  '#Wrapper',
+  '#DigitalOcean',
+  '.ps_container',
+  '.super.button',
+  '.rt-pick',
+]
+
+function slimDom(doc, sceneKey) {
+  if (sceneKey === 'home') {
+    for (const item of [...doc.querySelectorAll('#Main .cell.item')].slice(15)) {
+      item.remove()
+    }
+
+    const navBox = [...doc.querySelectorAll('#Main > .box')].find(box => box.textContent.includes('节点导航'))
+    if (navBox) {
+      const children = [...navBox.children]
+      const footer = children.at(-1)?.classList.contains('inner') ? children.at(-1) : null
+      const rows = children.slice(1, footer ? -1 : undefined)
+      for (const row of rows.slice(4)) row.remove()
+      for (const row of rows.slice(0, 4)) {
+        const td = row.querySelector('td:last-child')
+        if (!td) continue
+        const links = [...td.querySelectorAll('a')]
+        if (links.length > 10) {
+          let node = links[9].nextSibling
+          while (node) {
+            const next = node.nextSibling
+            node.remove()
+            node = next
+          }
+        }
+      }
+    }
+
+    const nodesSidebar = doc.querySelector('#Rightbar #nodes-sidebar')
+    if (nodesSidebar) {
+      for (const el of [...nodesSidebar.querySelectorAll('node-sidebar')].slice(4)) {
+        el.remove()
+      }
+    }
+
+    const topicsHot = doc.querySelector('#Rightbar #TopicsHot')
+    if (topicsHot) {
+      const cells = [...topicsHot.querySelectorAll(':scope > .cell')]
+      for (const cell of cells.slice(6)) cell.remove()
+    }
+
+    for (const box of doc.querySelectorAll('#Rightbar > .box')) {
+      const itemNodes = [...box.querySelectorAll('a.item_node')]
+      for (const a of itemNodes.slice(10)) a.remove()
+    }
+  }
+
+  if (sceneKey === 'topic') {
+    const repliesBox = doc.querySelector('#topic-replies .box')
+    if (repliesBox) {
+      const replies = [...repliesBox.querySelectorAll(':scope > div[id^="r_"]')]
+      const groups = []
+      for (const reply of replies) {
+        if (reply.getAttribute('data-depth') === '0' || groups.length === 0) groups.push([reply])
+        else groups.at(-1).push(reply)
+      }
+      const keepIdx = new Set([0, 1, 2])
+      const standaloneIdx = groups.findIndex((g, i) => !keepIdx.has(i) && g.length === 1)
+      if (standaloneIdx !== -1) keepIdx.add(standaloneIdx)
+      const opIdx = groups.findIndex((g, i) => !keepIdx.has(i) && g.some(r => r.querySelector('.badge.op')))
+      if (opIdx !== -1) keepIdx.add(opIdx)
+
+      groups.forEach((group, i) => {
+        if (!keepIdx.has(i)) {
+          for (const reply of group) reply.remove()
+        }
+      })
+    }
+  }
+
+  if (sceneKey === 'settings') {
+    const tz = doc.querySelector('select[name="timezone"]')
+    if (tz) {
+      for (const opt of [...tz.querySelectorAll('option')]) {
+        if (!opt.hasAttribute('selected') && !TIMEZONE_KEEP.has(opt.value)) {
+          opt.remove()
+        }
+      }
+    }
   }
 }
-for (const name of targets) {
-  await prepare(name, SCENES[name])
+
+function pruneCssStyles(css, docs) {
+  // 1. Strip unused decorative fonts and keep only woff2 for FontAwesome.
+  const out = css.replace(/@font-face\s*\{[^}]*\}/gi, (block) => {
+    if (/font-family\s*:\s*["']?(?:Press Start 2P|Mario)["']?\s*[;}]/i.test(block)) {
+      return ''
+    }
+    const woff2 = block.match(/url\(\s*"(data:font\/woff2;base64,[^"]+)"\s*\)/i)
+    if (woff2) {
+      const family = block.match(/font-family\s*:\s*([^;{}]+)/i)?.[1]?.trim()
+      const weight = block.match(/font-weight\s*:\s*([^;{}]+)/i)?.[1]?.trim()
+      const style = block.match(/font-style\s*:\s*([^;{}]+)/i)?.[1]?.trim()
+      const parts = [
+        family && `font-family:${family}`,
+        `src:url("${woff2[1]}") format("woff2")`,
+        weight && `font-weight:${weight}`,
+        style && `font-style:${style}`,
+      ].filter(Boolean)
+      return `@font-face{${parts.join(';')}}`
+    }
+    return block
+  })
+
+  // 2. Strip data: URLs in CSS rules whose selectors do not match any element across the 3 scenes.
+  const selectorUsed = (rawSel) => {
+    const clean = rawSel.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^@[^{]+\{/, '').trim()
+    if (!clean || clean.startsWith('@')) return true
+    if (CSS_ASSET_KEEP_SELECTORS.some(token => clean.includes(token))) return true
+    const querySel = clean.replace(/::?(?:before|after|hover|active|link|visited|focus(?:-visible)?)/g, '')
+    return docs.some((doc) => {
+      try {
+        return doc.querySelector(querySel) !== null
+      } catch {
+        return true
+      }
+    })
+  }
+
+  let result = ''
+  let pos = 0
+  while (pos < out.length) {
+    const idx = out.indexOf('url("data:', pos)
+    if (idx === -1) {
+      result += out.slice(pos)
+      break
+    }
+    const end = out.indexOf('")', idx)
+    if (end === -1) {
+      result += out.slice(pos)
+      break
+    }
+    const uri = out.slice(idx + 5, end)
+    // Keep tiny inline data URIs (< 512 bytes) and woff2/ttf fonts untouched here.
+    if (uri.length < 512 || /^data:(?:font\/|application\/)/i.test(uri)) {
+      result += out.slice(pos, end + 2)
+      pos = end + 2
+      continue
+    }
+    const ruleStart = out.lastIndexOf('}', idx) + 1
+    const brace = out.indexOf('{', ruleStart)
+    const sel = brace > -1 && brace < idx ? out.slice(ruleStart, brace) : ''
+    if (selectorUsed(sel)) {
+      result += out.slice(pos, end + 2)
+    } else {
+      result += out.slice(pos, idx) + 'url("data:,")'
+    }
+    pos = end + 2
+  }
+  return result
+}
+
+async function slimExistingFixtures() {
+  const entries = await Promise.all(
+    Object.entries(SCENES).map(async ([key, scene]) => {
+      const fileUrl = new URL(scene.output, output)
+      const html = await readFile(fileUrl, 'utf8')
+      const dom = new JSDOM(html, { virtualConsole: new VirtualConsole() })
+      slimDom(dom.window.document, key)
+      return { key, scene, fileUrl, doc: dom.window.document }
+    }),
+  )
+  const allDocs = entries.map(e => e.doc)
+  for (const { scene, fileUrl, doc } of entries) {
+    for (const style of doc.head.querySelectorAll('style')) {
+      style.textContent = toCss(pruneCssStyles(style.textContent, allDocs))
+    }
+    const out = '<!doctype html>\n' + doc.documentElement.outerHTML
+    await writeFile(fileUrl, out, { mode: 0o600 })
+    console.log(`${scene.output}: slimmed to ${(Buffer.byteLength(out, 'utf8') / 1024).toFixed(1)} KB`)
+  }
+}
+
+const args = process.argv.slice(2)
+if (args.includes('--slim')) {
+  await slimExistingFixtures()
+} else {
+  const targets = args.length ? args : Object.keys(SCENES)
+  for (const name of targets) {
+    if (!SCENES[name]) {
+      console.error(`未知场景：${name}（可选：${Object.keys(SCENES).join(', ')}）`)
+      process.exit(1)
+    }
+  }
+  for (const name of targets) {
+    await prepare(name, SCENES[name])
+  }
+  if (targets.length === Object.keys(SCENES).length) {
+    await slimExistingFixtures()
+  }
 }

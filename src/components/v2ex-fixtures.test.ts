@@ -7,25 +7,31 @@ function fixture(name: string) {
 }
 
 describe('V2EX 真实快照（首页 / 帖子详情 / 设置页）', () => {
-  test('首页保留 50 条帖子、节点图与侧栏', () => {
+  test('首页保留精简帖子列表、节点图与侧栏', () => {
     const home = fixture('v2ex-home')
-    expect(home.querySelectorAll('#Main .cell.item')).toHaveLength(50)
-    expect(home.querySelectorAll('[nodeavatar]').length).toBeGreaterThanOrEqual(8)
+    expect(home.querySelectorAll('#Main .cell.item')).toHaveLength(15)
+    expect(home.querySelectorAll('[nodeavatar]').length).toBeGreaterThanOrEqual(4)
     expect(home.querySelector('#Top .site-nav')).not.toBeNull()
     expect(home.querySelector('#Logo')).not.toBeNull()
     expect(home.querySelector('#Rightbar > .box')).not.toBeNull()
   })
 
-  test('帖子详情保留主题内容与 100 条回复', () => {
+  test('帖子详情保留主题内容与精简楼中楼回复', () => {
     const topic = fixture('v2ex-topic')
     expect(topic.querySelector('.topic_content')).not.toBeNull()
-    expect(topic.querySelectorAll('.reply_content').length).toBeGreaterThanOrEqual(100)
+    const replies = topic.querySelectorAll('.reply_content')
+    expect(replies.length).toBeGreaterThanOrEqual(20)
+    expect(replies.length).toBeLessThanOrEqual(30)
+    expect(topic.querySelector('.reply-threads-d > .cell[data-depth="1"]')).not.toBeNull()
+    expect(topic.querySelector('a.reply-strip')).not.toBeNull()
+    expect(topic.querySelector('.badge.op')).not.toBeNull()
   })
 
-  test('设置页保留选项结构', () => {
+  test('设置页保留选项结构与精简时区列表', () => {
     const settings = fixture('v2ex-settings')
     expect(settings.querySelectorAll('.onoffswitch').length).toBeGreaterThanOrEqual(6)
     expect(settings.querySelector('form')).not.toBeNull()
+    expect(settings.querySelectorAll('select[name="timezone"] option').length).toBeLessThanOrEqual(12)
   })
 
   test.each(['v2ex-home', 'v2ex-topic', 'v2ex-settings'])('%s 不携带可执行内容、外部资源或账号字段', name => {
