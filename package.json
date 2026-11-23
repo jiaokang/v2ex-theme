@@ -2,6 +2,7 @@
   "name": "v2ex-theme",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@12.21.0",
   "imports": {
     "#/*": "./src/*"
   },
@@ -43,11 +44,5 @@
     "vite": "^8.0.0",
     "vitest": "^5.1.1",
     "wrangler": "^4.166.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "lightningcss"
-    ]
   }
 }
