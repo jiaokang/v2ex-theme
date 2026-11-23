@@ -397,15 +397,6 @@ body {
   line-height: 1.65;
 }
 
-.landing-hero-lead code {
-  padding: 1px 6px;
-  border: 1px solid var(--line-hairline);
-  border-radius: var(--radius-sticker);
-  background: var(--fill-muted);
-  color: var(--foreground);
-  font: 400 0.875em/1.4 var(--font-mono);
-}
-
 .landing-cta-group {
   display: flex;
   flex-wrap: wrap;

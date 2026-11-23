@@ -67,7 +67,9 @@ function Home() {
                 社区主题。
               </h1>
               <p className="landing-hero-lead">
-                精选开源社区主题，复制一行 <code>@import</code> 即可在 V2EX 设置页启用，也可以用 AI Agent 几分钟创作并投稿你的专属风格。
+                精选开源社区主题，在线预览并一键应用到 V2EX。
+                <br />
+                也可以用 AI Agent 几分钟创作并投稿你的专属风格。
               </p>
               <div className="landing-cta-group">
                 <Link className="brutal-btn brutal-btn-primary" to="/themes">
