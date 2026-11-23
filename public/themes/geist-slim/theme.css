@@ -1,0 +1,678 @@
+/*
+ * V2EX Geist Slim — 基于 Geist 的紧凑无头像主题
+ * 原作者：Michael Hinton（基于 V2EX Geist 定制）
+ * 用法：用本文件替换 V2EX 自定义 CSS 中原有的主题。
+ * 浅色、深色和自动模式沿用 V2EX 的设置。
+ * Geist 字体从 Google Fonts 加载；加载失败时自动使用系统字体。
+ */
+
+@font-face {
+  font-family: "Geist";
+  src: local("Geist"), url("https://fonts.gstatic.com/s/geist/v5/gyByhwUxId8gMEwcGFWNOITd.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: local("Geist Mono"), url("https://fonts.gstatic.com/s/geistmono/v6/or3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+}
+
+/* Foundation: paper, ink, hairlines. Color is reserved for focus and links. */
+:root:root {
+  color-scheme: light dark;
+  --vg-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --vg-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --vg-canvas: light-dark(#fafafa, #0a0a0a);
+  --vg-panel: light-dark(#fff, #111);
+  --vg-fill: light-dark(#f5f5f5, #191919);
+  --vg-hover: light-dark(#ededed, #222);
+  --vg-border: light-dark(#e5e5e5, #292929);
+  --vg-strong: light-dark(#b0b0b0, #626262);
+  --vg-text: light-dark(#171717, #ededed);
+  --vg-muted: light-dark(#616161, #a1a1a1);
+  --vg-accent: light-dark(#0054b0, #62a9ff);
+  --vg-solid: light-dark(#171717, #ededed);
+  --vg-solid-hover: light-dark(#333, #d4d4d4);
+  --vg-on-solid: light-dark(#fff, #171717);
+  --vg-radius: 8px;
+  --vg-small-radius: 6px;
+  --vg-gutter: clamp(16px, 3vw, 32px);
+  --vg-space: 16px;
+  --vg-ink-filter: grayscale(1) brightness(0) invert(0.09);
+
+  /* Map native V2EX components onto the same palette. */
+  --code-font: var(--vg-mono);
+  --box-background-color: var(--vg-panel);
+  --box-background-alt-color: var(--vg-fill);
+  --box-background-hover-color: var(--vg-hover);
+  --box-background-translucent-color: var(--vg-panel);
+  --box-glass-color: var(--vg-panel);
+  --box-thick-glass-color: var(--vg-panel);
+  --box-foreground-color: var(--vg-text);
+  --box-border-color: var(--vg-border);
+  --box-border-hover-color: var(--vg-strong);
+  --box-border-focus-color: var(--vg-accent);
+  --box-border-radius: var(--vg-radius);
+  --button-background-color: var(--vg-panel);
+  --button-background-hover-color: var(--vg-fill);
+  --button-background-active-color: var(--vg-hover);
+  --button-foreground-color: var(--vg-text);
+  --button-foreground-hover-color: var(--vg-text);
+  --button-border-color: var(--vg-border);
+  --button-border-hover-color: var(--vg-strong);
+  --node-sidebar-hover-color: var(--vg-fill);
+  --color-foreground: var(--vg-text);
+  --color-graphite: var(--vg-text);
+  --color-gray: var(--vg-muted);
+  --color-fade: var(--vg-muted);
+  --link-color: var(--vg-muted);
+  --link-visited-color: var(--vg-muted);
+  --link-hover-color: var(--vg-text);
+  --link-primary-color: var(--vg-accent);
+}
+
+:root[data-site-theme="light"] { color-scheme: light; }
+:root[data-site-theme="dark"],
+:root:not([data-site-theme]):has(#Wrapper.Night) {
+  color-scheme: dark;
+  --vg-ink-filter: grayscale(1) brightness(0) invert(0.93);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-site-theme="light"]) {
+    --vg-ink-filter: grayscale(1) brightness(0) invert(0.93);
+  }
+}
+
+/* Settings: neutral controls, with a solid selected tab and switch state. */
+#Wrapper :is(a.tab, a.tab_current)[href^="/settings/"] {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  margin: 2px 3px 2px 0;
+  padding: 0 9px;
+  border-radius: var(--vg-small-radius);
+  color: var(--vg-muted);
+  font: 500 13px/1.2 var(--vg-sans);
+}
+#Wrapper a.tab[href^="/settings/"]:hover { background: var(--vg-fill); color: var(--vg-text); }
+#Wrapper a.tab_current[href^="/settings/"] { background: var(--vg-solid); color: var(--vg-on-solid); }
+#Wrapper form[action="/settings"] .onoffswitch input {
+  display: block;
+  position: absolute;
+  opacity: 0;
+}
+#Wrapper form[action="/settings"] .onoffswitch input:focus-visible + label {
+  outline: 2px solid var(--vg-accent);
+  outline-offset: 2px;
+}
+#Wrapper form[action="/settings"] .onoffswitch label { box-shadow: inset 0 0 0 1px var(--vg-border); }
+#Wrapper form[action="/settings"] .onoffswitch .frame::before { background: var(--vg-solid); color: var(--vg-on-solid); }
+#Wrapper form[action="/settings"] .onoffswitch .frame::after { background: var(--vg-fill); color: var(--vg-muted); }
+#Wrapper form[action="/settings"] .onoffswitch .switch {
+  background: var(--vg-panel);
+  box-shadow: inset 0 0 0 1px var(--vg-strong);
+}
+#Wrapper:has(form[action="/settings"]) .theme-switch {
+  --theme-switch-track-color: var(--vg-fill);
+  --theme-switch-track-hover-color: var(--vg-hover);
+  --theme-switch-thumb-color: var(--vg-solid);
+  --theme-switch-thumb-hover-color: var(--vg-solid);
+  --theme-switch-glyph-color: var(--vg-muted);
+  --theme-switch-glyph-hover-color: var(--vg-text);
+  --theme-switch-glyph-chosen-color: var(--vg-on-solid);
+  --theme-switch-glyph-chosen-hover-color: var(--vg-on-solid);
+}
+#Wrapper form[action="/settings"] :is(select:not(.select2-hidden-accessible), .select2-selection--single) {
+  box-sizing: border-box;
+  height: 32px;
+  border: 1px solid var(--vg-strong);
+  border-radius: var(--vg-small-radius);
+  background: var(--vg-panel);
+  color: var(--vg-text);
+  font: 400 13px/1.2 var(--vg-sans);
+}
+#Wrapper form[action="/settings"] select:not(.select2-hidden-accessible) { padding-inline: 7px; }
+#Wrapper form[action="/settings"] .select2-container { max-width: 100%; }
+#Wrapper form[action="/settings"] .select2-selection__rendered { color: var(--vg-text); line-height: 30px; }
+#Wrapper form[action="/settings"] .select2-selection__arrow { height: 30px; }
+#Wrapper form[action="/settings"] .select2-selection__arrow b { border-block-color: var(--vg-muted); }
+/* Select2 appends its open menu directly to body. */
+:root:has(form[action="/settings"]) body > .select2-container--open .select2-dropdown {
+  background: var(--vg-panel);
+  border-color: var(--vg-strong);
+  color: var(--vg-text);
+}
+:root:has(form[action="/settings"]) body > .select2-container--open .select2-search__field {
+  border-color: var(--vg-strong);
+  background: var(--vg-panel);
+  color: var(--vg-text);
+}
+:root:has(form[action="/settings"]) body > .select2-container--open .select2-results__option--selected {
+  background: var(--vg-fill);
+}
+:root:has(form[action="/settings"]) body > .select2-container--open .select2-results__option--highlighted {
+  background: var(--vg-solid);
+  color: var(--vg-on-solid);
+}
+@media (prefers-reduced-motion: reduce) {
+  #Wrapper form[action="/settings"] .onoffswitch :is(.frame, .switch),
+  #Wrapper:has(form[action="/settings"]) .theme-switch :is(.theme-switch-thumb, .theme-switch-glyph) { transition: none; }
+}
+
+/* Shared page grid: discussion stream | existing sidebar. */
+html, body {
+  background: var(--vg-canvas);
+  color: var(--vg-text);
+}
+
+/* Some nodes inject their own wrapper backgrounds after the theme loads. */
+#Wrapper, #Wrapper.Night {
+  background: var(--vg-canvas) !important;
+  color: var(--vg-text);
+}
+
+body {
+  min-width: 0 !important; /* Desktop V2EX declares 820px inline. */
+  font-family: var(--vg-sans) !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+:is(#Top, #Wrapper, #Bottom) > .content {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: var(--vg-gutter);
+}
+
+#Wrapper > .content::after { content: ""; display: block; clear: both; }
+#Main { margin-inline: 0 300px; }
+#Rightbar { width: 276px; margin-inline: 0; }
+
+#Top, #site-header {
+  box-sizing: border-box;
+  background: var(--vg-panel);
+  border: 0;
+  border-bottom: 1px solid var(--vg-border);
+  box-shadow: none;
+}
+
+#Top { height: 60px; padding-inline: 0; }
+#Top .site-nav { min-height: 59px; padding-top: 0; }
+#Logo, #LogoMobile { filter: var(--vg-ink-filter); }
+#Bottom {
+  background: var(--vg-canvas);
+  border-color: var(--vg-border);
+  color: var(--vg-muted);
+  padding-inline: 0;
+}
+
+:is(#Top, #site-header) #search-container {
+  box-sizing: border-box;
+  min-width: 0;
+  height: 34px;
+  margin-block: 0;
+  background: var(--vg-fill);
+  border: 1px solid var(--vg-border);
+  border-radius: var(--vg-small-radius);
+}
+
+:is(#Top, #site-header) #search-container::before {
+  top: 0;
+  filter: var(--vg-ink-filter) opacity(.6);
+  pointer-events: none;
+}
+
+#search-container #search {
+  color: var(--vg-text);
+  font: 400 16px/1 var(--vg-sans);
+}
+
+#search-container #search-result {
+  top: calc(100% + 6px);
+  color: var(--vg-text);
+  box-shadow: none;
+}
+
+#search-container #search-result .search-item { color: var(--vg-muted); }
+#search-container #search-result .search-item.active { color: var(--vg-text); }
+
+/* One frame for the stream; individual threads are rows, not cards. */
+#Wrapper .box, #Top .box, #site-header .box {
+  background: var(--vg-panel);
+  color: var(--vg-text);
+  border: 1px solid var(--vg-border) !important;
+  border-radius: var(--vg-radius);
+  box-shadow: none;
+}
+
+#Wrapper .box:empty,
+#Wrapper #pro-campaign-container:not(:has(> *)) { border: 0 !important; }
+/* Native reply connectors are positioned relative to the site's row padding. */
+#Wrapper .box > :is(.cell, .inner, .header, .subtle):where(:not(
+  .reply-threads-d > .cell[data-depth],
+  .reply-threads-f.reply-lines-on > .cell[data-reply-id]
+)) {
+  padding: 12px var(--vg-space);
+  border-bottom-color: var(--vg-border);
+}
+#Wrapper .box > :is(.cell, .inner, .header, .subtle):last-child { border-bottom: 0; }
+#Rightbar .box > :is(.cell, .inner, .header) { padding: 12px 14px; }
+#Wrapper .balance_area {
+  border: 1px solid var(--vg-border);
+  border-radius: var(--vg-small-radius);
+  background: var(--vg-panel);
+  color: var(--vg-text);
+  font-variant-numeric: tabular-nums;
+  text-shadow: none;
+  white-space: nowrap;
+}
+#Wrapper a.balance_area:hover {
+  border-color: var(--vg-strong);
+  background: var(--vg-fill);
+}
+#Wrapper a.balance_area:active { background: var(--vg-hover); }
+#Wrapper .box > .cell.item { padding-block: 12px; }
+#Wrapper .box > .cell.item:focus-within { background-color: var(--vg-fill); }
+
+#Wrapper #Tabs {
+  padding: 4px 8px 0;
+  border-bottom: 1px solid var(--vg-border);
+  border-radius: var(--vg-radius) var(--vg-radius) 0 0;
+  background: var(--vg-panel);
+}
+
+#Tabs :is(a.tab, a.tab_current):any-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  box-sizing: border-box;
+  margin: 0 0 -1px;
+  padding: 0 9px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--vg-muted);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+#Tabs :is(a.tab, a.tab_current):hover {
+  background: var(--vg-fill);
+  color: var(--vg-text);
+}
+#Tabs a.tab_current:any-link {
+  border-bottom-color: var(--vg-text);
+  color: var(--vg-text);
+  font-weight: 650;
+}
+#Wrapper #SecondaryTabs {
+  background: var(--vg-canvas);
+  font-size: 13px;
+  line-height: 1.8;
+}
+#SecondaryTabs a { white-space: nowrap; }
+
+.item_title {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+#Wrapper .item_title a:any-link { color: var(--vg-text); }
+#Wrapper .item_title a:visited { color: var(--vg-muted); }
+#Wrapper .item_title a:hover {
+  color: var(--vg-text);
+  text-underline-offset: .18em;
+}
+#Wrapper :is(.topic_info, .ago, .gray, .fade, .snow, .chevron) { color: var(--vg-muted); }
+#Wrapper :is(.topic_info, .cell.item .small) { line-height: 1.55; }
+#Wrapper img.avatar { border-radius: var(--vg-small-radius); }
+
+#Wrapper :is(a.node, a.tag):any-link {
+  background: var(--vg-fill);
+  color: var(--vg-muted);
+  border: 1px solid var(--vg-border);
+  border-radius: 4px;
+  box-shadow: none;
+  line-height: 1.25;
+  padding: 2px 5px;
+}
+#Wrapper :is(a.node, a.tag):hover {
+  background: var(--vg-hover);
+  color: var(--vg-text);
+}
+
+#Wrapper :is(a.count_livid, a.count_orange, a.count_blue, a.count_green):any-link {
+  min-width: 2.4em;
+  box-sizing: border-box;
+  margin-inline: 0;
+  padding: 4px 7px;
+  border: 1px solid var(--vg-border);
+  border-radius: var(--vg-small-radius);
+  background: var(--vg-panel);
+  color: var(--vg-muted);
+  font-size: 12px;
+  font-weight: 550;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+  text-align: center;
+  word-break: normal;
+}
+#Wrapper :is(a.count_livid, a.count_orange, a.count_blue, a.count_green):hover {
+  background: var(--vg-fill);
+  border-color: var(--vg-strong);
+  color: var(--vg-text);
+}
+#Wrapper a.count_orange:any-link:not(:visited) {
+  border-color: var(--vg-strong);
+  color: var(--vg-text);
+  font-weight: 700;
+}
+
+/* Plane directory: let the native icons distinguish the sections. */
+#Wrapper .box:has(> .inner > a.item_node) > .header:has(> .spacer + span[style]) {
+  gap: 6px 10px;
+  flex-wrap: wrap;
+  border-radius: calc(var(--vg-radius) - 1px) calc(var(--vg-radius) - 1px) 0 0 !important;
+  background-color: var(--vg-panel) !important;
+  color: var(--vg-text) !important;
+}
+#Wrapper .box:has(> .inner > a.item_node) > .header > .spacer + span[style] {
+  flex-wrap: wrap;
+  color: var(--vg-muted) !important;
+}
+#Rightbar .box > :is(.cell, .inner):has(> a.item_node),
+#Wrapper .box:has(> .header > .spacer + span[style]) > .inner:has(> a.item_node) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 7px;
+}
+#Rightbar .box > :is(.cell, .inner) > a.item_node:any-link,
+#Wrapper .box:has(> .header > .spacer + span[style]) > .inner > a.item_node:any-link {
+  box-sizing: border-box;
+  max-width: 100%;
+  margin: 0;
+  padding: 4px 7px;
+  border: 1px solid transparent;
+  border-radius: var(--vg-small-radius);
+  background: transparent;
+  color: var(--vg-text);
+  box-shadow: none;
+  font-size: 13px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+#Rightbar .box > :is(.cell, .inner) > a.item_node:any-link {
+  border-color: var(--vg-border);
+  background: var(--vg-panel);
+}
+#Rightbar .box > :is(.cell, .inner) > a.item_node:is(:hover, :focus-visible, :active) {
+  border-color: var(--vg-strong);
+  background: var(--vg-fill);
+}
+#Wrapper .box:has(> .header > .spacer + span[style]) > .inner > a.item_node:is(:hover, :focus-visible) {
+  background: var(--vg-fill);
+}
+
+/* Reading surfaces, Markdown and reply controls. */
+#Wrapper .box > .header:has(h1) { padding-block: 20px; }
+#Wrapper .header h1 {
+  color: var(--vg-text);
+  font-size: clamp(18px, 1.85vw, 24px);
+  font-weight: 650;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+#Wrapper :is(.topic_content, .reply_content) {
+  color: var(--vg-text);
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+#Wrapper .topic_content { font-size: 15px; }
+#Wrapper .reply_content { font-size: 14px; }
+#Wrapper :is(.topic_content, .reply_content) a:any-link {
+  color: var(--vg-accent);
+  text-decoration: underline;
+  text-underline-offset: .16em;
+}
+#Wrapper :is(.topic_content, .reply_content) :is(pre, code, kbd) {
+  font-family: var(--vg-mono);
+}
+#Wrapper :is(.topic_content, .reply_content) :is(pre, :not(pre) > code) {
+  background: var(--vg-fill);
+  border-radius: var(--vg-small-radius);
+}
+#Wrapper :is(.topic_content, .reply_content) pre {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--vg-border);
+}
+#Wrapper :is(.topic_content, .reply_content) pre > code { background: transparent; }
+#Wrapper :is(.topic_content, .reply_content) blockquote {
+  border-inline-start-color: var(--vg-strong);
+  color: var(--vg-muted);
+}
+#Wrapper :is(.topic_buttons, .inner.buttons, .cell.buttons) {
+  background: var(--vg-fill);
+  border-radius: 0 0 var(--vg-radius) var(--vg-radius);
+  filter: none;
+}
+#Wrapper .subtle {
+  background: var(--vg-fill);
+  border-inline-start-color: var(--vg-strong);
+}
+
+:is(#Wrapper, #Top, #site-header, #Bottom) :is(.sl, .sll, .sls, .ml, .mll, .mle) {
+  max-width: 100%;
+  padding: 7px 9px;
+  border: 1px solid var(--vg-strong);
+  border-radius: var(--vg-small-radius);
+  background: var(--vg-panel);
+  color: var(--vg-text);
+  box-shadow: none;
+  font-family: var(--vg-sans);
+}
+#Wrapper :is(.mll, .mle, .ml.code) { font-family: var(--vg-mono); }
+
+:is(#Wrapper, #Top, #site-header, #Bottom) .super.button {
+  box-sizing: border-box;
+  background: var(--vg-panel);
+  border: 1px solid var(--vg-strong);
+  border-radius: var(--vg-small-radius);
+  box-shadow: none;
+  color: var(--vg-text);
+  font: 550 13px/1.35 var(--vg-sans);
+  padding: 7px 12px;
+  text-shadow: none;
+}
+:is(#Wrapper, #Top, #site-header, #Bottom) .super.button:not(:disabled):hover {
+  background: var(--vg-fill);
+  border-color: var(--vg-strong);
+  color: var(--vg-text);
+  box-shadow: none;
+  text-shadow: none;
+}
+:is(#Wrapper, #Top, #site-header) :is(input[type="submit"], button[type="submit"], a[href="/signup"]).super.normal.button {
+  background: var(--vg-solid);
+  border-color: transparent;
+  color: var(--vg-on-solid);
+}
+:is(#Wrapper, #Top, #site-header) :is(input[type="submit"], button[type="submit"], a[href="/signup"]).super.normal.button:not(:disabled):hover {
+  background: var(--vg-solid-hover);
+  color: var(--vg-on-solid);
+}
+:is(#Wrapper, #Top, #site-header, #Bottom) .super.button:disabled { opacity: .55; cursor: not-allowed; }
+
+#Wrapper :is(.page_normal, .page_current) {
+  padding: 4px 7px;
+  background: var(--vg-panel);
+  border: 1px solid var(--vg-border);
+  border-radius: var(--vg-small-radius);
+  box-shadow: none;
+  color: var(--vg-muted);
+  font-variant-numeric: tabular-nums;
+}
+#Wrapper .page_normal:hover { background: var(--vg-fill); color: var(--vg-text); }
+#Wrapper .page_current {
+  background: var(--vg-fill);
+  border-color: var(--vg-strong);
+  color: var(--vg-text);
+  font-weight: 650;
+}
+
+:is(#Wrapper, #Top, #site-header, #Bottom) :is(a, button, input, select, textarea, [tabindex]):focus-visible,
+:is(#Top, #site-header) #search-container:focus-within {
+  outline: 2px solid var(--vg-accent);
+  outline-offset: 2px;
+}
+#search-container #search:focus-visible { outline: none; }
+::selection { background: var(--vg-solid); color: var(--vg-on-solid); }
+
+@media (hover: hover) {
+  #Wrapper .box > .cell.item:hover { background-color: var(--vg-canvas); }
+}
+
+/* Native mobile markup has no #Main/#Rightbar; also support narrow desktop. */
+@media (max-width: 840px) {
+  #Main { margin-inline: 0; }
+  #Wrapper > .content:has(> #Main) { display: flex; flex-direction: column; }
+  #Rightbar { float: none; order: 1; width: auto; }
+  #Leftbar:empty { display: none; }
+}
+
+@media (max-width: 520px) {
+  :root:root { --vg-gutter: 10px; --vg-space: 12px; }
+  #Top .site-nav { flex-wrap: wrap; gap: 6px; padding-block: 8px; }
+  #Top { height: auto; }
+  #Top .site-nav .tools { flex: 1 1 max-content; }
+  #Top #search-container { margin-left: 0; flex: 1 1 90px; width: auto; max-width: 245px; }
+  #site-header #search-container { flex: 1 1 auto; width: auto; }
+  #Wrapper .content > #Main > .sep20:empty:first-child { height: 12px; }
+  #Wrapper .box > .cell.item { padding-block: 10px; }
+  #Wrapper .cell.item td[width="70"] { width: 42px; }
+  #Wrapper .cell.item td[width="48"] { width: 32px; }
+  #Wrapper .cell.item td[width="48"] .avatar { width: 32px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #search-container,
+  #search-container::before,
+  #Wrapper :is(.sl, .sll, .sls, .ml, .mll, .mle, .super.button) {
+    transition: none;
+  }
+}
+
+/* ===== Geist Slim：帖子列表紧凑模式与无头像布局 ===== */
+
+/* 1. 隐藏标题下方整行信息（作者 / 时间 / 最后回复） */
+#Wrapper .cell.item .topic_info,
+#Wrapper #TopicsNode .topic_info {
+  display: none !important;
+}
+
+/* 2. 去掉标题与信息行之间的间隔 */
+#Wrapper .cell.item .item_title + .sep5,
+#Wrapper #TopicsNode .item_title + .sep5 {
+  display: none !important;
+}
+
+/* 3. 缩小每一行的上下内边距 */
+#Wrapper .box > .cell.item,
+#Wrapper #TopicsNode > .cell {
+  padding-block: 8px !important;
+}
+#Wrapper #TopicsNode > .cell {
+  padding-inline: var(--vg-space);
+}
+
+/* 4. 列表：隐藏头像及其右侧的间隔列，让标题顶格 */
+#Wrapper .cell.item td:has(> img.avatar),
+#Wrapper .cell.item td:has(> a > img.avatar),
+#Wrapper #TopicsNode td:has(> img.avatar),
+#Wrapper #TopicsNode td:has(> a > img.avatar),
+#Wrapper .cell.item td:has(> img.avatar) + td,
+#Wrapper .cell.item td:has(> a > img.avatar) + td,
+#Wrapper #TopicsNode td:has(> img.avatar) + td,
+#Wrapper #TopicsNode td:has(> a > img.avatar) + td {
+  display: none !important;
+}
+
+/* ===== 帖子详情页 ===== */
+
+/* 5. 楼主头像（标题右上角，兼容桌面端与原生移动端） */
+#Wrapper .box > .header:has(h1) .fr:has(img.avatar),
+#Wrapper .box > .header:has(h1) img.avatar,
+#Main .box > .header img.avatar {
+  display: none !important;
+}
+
+/* 6. 回复区：隐藏头像列和间隔列，让回复内容顶格（兼容桌面端与原生移动端） */
+#Wrapper .cell[id^="r_"] td:has(> img.avatar),
+#Wrapper .cell[id^="r_"] td:has(> a > img.avatar),
+#Wrapper .cell[id^="r_"] td:has(> img.avatar) + td,
+#Wrapper .cell[id^="r_"] td:has(> a > img.avatar) + td {
+  display: none !important;
+}
+
+/* 7. 楼中楼树形模式：头像隐藏后重算缩进与连线轨道，避免竖线穿过回复正文 */
+@supports selector(:has(*)) {
+  #Wrapper .reply-threads-d {
+    --vg-tree-step: 20px;
+    --vg-tree-rail: 8px;
+    --tree-pad: calc(var(--vg-space) - var(--vg-tree-rail));
+    --tree-root: 0px;
+    --tree-avatar: 0px;
+    --tree-gap: var(--vg-tree-rail);
+    --tree-reach-root: var(--vg-tree-step);
+    --tree-reach: var(--vg-tree-step);
+    --tree-curve: 8px;
+    --tree-hit: 13px;
+    --tree-knob: 13px;
+  }
+  #Wrapper .reply-threads-d > .cell[data-depth] {
+    padding-left: calc(var(--vg-space) + var(--depth) * var(--vg-tree-step));
+    padding-right: var(--vg-space);
+  }
+  #Wrapper .reply-threads-d .reply-tree-join {
+    width: calc(var(--vg-tree-step) + var(--vg-tree-rail) - 4px);
+    height: calc(var(--tree-top) + 10px);
+  }
+  #Wrapper .reply-threads-d .reply-tree-join.reply-tree-straight {
+    width: var(--tree-stroke);
+    height: calc(var(--tree-top) - 3px);
+  }
+  #Wrapper .reply-threads-d .reply-toggle {
+    top: calc(var(--tree-top) + 18px);
+  }
+  #Wrapper .reply-threads-d > .cell[data-depth="0"] > .reply-toggle {
+    top: calc(var(--tree-top) + 6px);
+  }
+  #Wrapper .reply-threads > .reply-group {
+    margin-left: var(--vg-space);
+  }
+  @media (max-width: 520px) {
+    #Wrapper .reply-threads-d {
+      --vg-tree-step: 16px;
+      --vg-tree-rail: 6px;
+    }
+  }
+}
+
+/* 兜底：浏览器不支持 :has() 时，至少把头像图片隐藏 */
+#Wrapper .cell.item img.avatar,
+#Wrapper #TopicsNode img.avatar,
+#Wrapper .cell[id^="r_"] img.avatar {
+  display: none !important;
+}
