@@ -5,7 +5,7 @@ import { gzipSync, gunzipSync } from 'node:zlib'
 
 const ROOT = new URL('../', import.meta.url)
 const SRC_DIR = new URL('scripts/fixtures/', ROOT)
-const DEST_DIR = new URL('skills/v2ex-theme/fixtures/', ROOT)
+const DEST_DIR = new URL('skills/v2ex-theme-create/fixtures/', ROOT)
 const SCENES = ['home', 'topic', 'settings']
 const STYLE_RE = /<style[^>]*>[\s\S]*?<\/style>/g
 
@@ -70,9 +70,9 @@ for (const scene of SCENES) {
   assert.equal(gunzipSync(compressed).toString('utf8'), skeleton)
   await writeFile(new URL(`v2ex-${scene}.html.gz`, DEST_DIR), compressed)
   totalOut += compressed.length
-  console.log(`skills/v2ex-theme/fixtures/v2ex-${scene}.html.gz (${compressed.length} bytes)`)
+  console.log(`skills/v2ex-theme-create/fixtures/v2ex-${scene}.html.gz (${compressed.length} bytes)`)
 }
 
 console.log(
-  `skills/v2ex-theme/fixtures/shared-styles.json.gz (${sharedPayload.length} bytes) — total ${(totalOut / 1024).toFixed(1)} KB from ${(totalIn / 1024).toFixed(1)} KB`,
+  `skills/v2ex-theme-create/fixtures/shared-styles.json.gz (${sharedPayload.length} bytes) — total ${(totalOut / 1024).toFixed(1)} KB from ${(totalIn / 1024).toFixed(1)} KB`,
 )

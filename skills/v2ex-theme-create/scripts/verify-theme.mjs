@@ -90,7 +90,7 @@ export function buildPreviewShell({ name, themeCss, defaultScheme = 'light' }) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>V2EX Theme Preview · ${name.replace(/[<>&"]/g, '')}</title>
+  <title>V2EX 主题预览 · ${name.replace(/[<>&"]/g, '')}</title>
   <style>
     :root {
       color-scheme: light dark;
@@ -417,11 +417,11 @@ function parseArgs(argv) {
 async function main() {
   const opts = parseArgs(process.argv.slice(2))
   if (!opts.css) {
-    console.error('Usage: node verify-theme.mjs --css <path/to/theme.css> [--name <label>] [--mode both|light|dark] [--out-dir <dir>] [--no-screenshots] [--no-open]')
+    console.error('用法：node verify-theme.mjs --css <theme.css 路径> [--name <主题名>] [--mode both|light|dark] [--out-dir <输出目录>] [--no-screenshots] [--no-open]')
     process.exit(1)
   }
   if (!['both', 'light', 'dark'].includes(opts.mode)) {
-    console.error(`Invalid --mode "${opts.mode}". Expected: both, light, or dark.`)
+    console.error(`参数 --mode "${opts.mode}" 无效，仅支持：both、light 或 dark。`)
     process.exit(1)
   }
 
@@ -452,7 +452,7 @@ async function main() {
         screenshots = await captureWithPlaywright(playwright, shots, themeCss, outDir)
         screenshotEngine = 'playwright'
       } catch (err) {
-        screenshotWarning = `Playwright capture failed (${err.message}); trying local Chromium.`
+        screenshotWarning = `Playwright 截图失败（${err.message}），正在尝试本机 Chromium。`
       }
     }
     if (screenshots.length === 0) {
@@ -464,11 +464,11 @@ async function main() {
           screenshotWarning = null
         } catch (err) {
           screenshotEngine = 'none'
-          screenshotWarning = `Local Chromium capture failed (${err.message}); falling back to Preview Shell.`
+          screenshotWarning = `本机 Chromium 截图失败（${err.message}），已降级为交互预览页。`
         }
       } else {
         screenshotEngine = 'none'
-        screenshotWarning = 'Neither Playwright nor local Chrome/Chromium was found; falling back to Preview Shell.'
+        screenshotWarning = '未找到 Playwright 或本机 Chrome/Chromium，已跳过自动截图并降级为交互预览页。'
       }
     }
   }

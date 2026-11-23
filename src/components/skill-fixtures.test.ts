@@ -8,9 +8,9 @@ import {
   buildPreviewShell,
   buildSceneDocument,
   reconstructFixture,
-} from '../../skills/v2ex-theme/scripts/verify-theme.mjs'
+} from '../../skills/v2ex-theme-create/scripts/verify-theme.mjs'
 
-describe('skills/v2ex-theme 分发包与同步一致性', () => {
+describe('skills/v2ex-theme-create 分发包与同步一致性', () => {
   test.each(['home', 'topic', 'settings'])('内置去重 fixture (%s) 与 scripts/fixtures 完全一致', (scene) => {
     const expected = readFileSync(`scripts/fixtures/v2ex-${scene}.html`, 'utf8')
     const actual = reconstructFixture(scene)
@@ -18,10 +18,10 @@ describe('skills/v2ex-theme 分发包与同步一致性', () => {
   })
 
   test('SKILL.md 包含正确 frontmatter 且引用的相对文件存在', () => {
-    const skillMd = readFileSync('skills/v2ex-theme/SKILL.md', 'utf8')
-    expect(skillMd).toMatch(/^---\n[\s\S]*name:\s*v2ex-theme[\s\S]*disable-model-invocation:\s*true[\s\S]*---/)
-    expect(existsSync('skills/v2ex-theme/references/v2ex-selectors.md')).toBe(true)
-    expect(existsSync('skills/v2ex-theme/scripts/verify-theme.mjs')).toBe(true)
+    const skillMd = readFileSync('skills/v2ex-theme-create/SKILL.md', 'utf8')
+    expect(skillMd).toMatch(/^---\n[\s\S]*name:\s*v2ex-theme-create[\s\S]*disable-model-invocation:\s*true[\s\S]*---/)
+    expect(existsSync('skills/v2ex-theme-create/references/v2ex-selectors.md')).toBe(true)
+    expect(existsSync('skills/v2ex-theme-create/scripts/verify-theme.mjs')).toBe(true)
   })
 
   test('buildSceneDocument 正确切换浅深色模式并注入主题 CSS', () => {
@@ -46,7 +46,7 @@ describe('skills/v2ex-theme 分发包与同步一致性', () => {
       const stdout = execFileSync(
         process.execPath,
         [
-          'skills/v2ex-theme/scripts/verify-theme.mjs',
+          'skills/v2ex-theme-create/scripts/verify-theme.mjs',
           '--css',
           'public/themes/claude/theme.css',
           '--name',
