@@ -84,11 +84,11 @@
   color-scheme: dark;
 }
 
-:root:root:not([data-site-theme="light"]):has(#Wrapper.Night) {
+:root:root:not([data-site-theme]):has(#Wrapper.Night) {
   color-scheme: dark;
 }
 
-:root:root:is([data-site-theme="dark"], :not([data-site-theme="light"]):has(#Wrapper.Night)) {
+:root:root:is([data-site-theme="dark"], :not([data-site-theme]):has(#Wrapper.Night)) {
   --vt-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.32);
   --vt-shadow-2: 0 2px 8px rgba(0, 0, 0, 0.5), 0 10px 28px rgba(0, 0, 0, 0.42);
   --vt-logo-filter: brightness(0) invert(0.93);
@@ -1101,79 +1101,41 @@ body {
 #Wrapper .onoffswitch label {
   position: relative;
   display: block;
+  width: 100%;
   height: 32px;
+  padding: 0;
   border-radius: 999px;
   background: var(--vt-fill-strong);
-  overflow: hidden;
-  transition: background 0.2s cubic-bezier(0.2, 0, 0, 1);
-}
-
-#Wrapper .onoffswitch label::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
   box-shadow: inset 0 0 0 2px var(--vt-control);
-  pointer-events: none;
-  transition: box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1);
-}
-
-#Wrapper .onoffswitch input[type="checkbox"]:checked + label::after {
-  box-shadow: inset 0 0 0 2px transparent;
+  overflow: visible;
+  cursor: pointer;
+  transition: background 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 
 #Wrapper .onoffswitch label .frame {
-  width: 200%;
-  height: 32px;
-  margin-left: -100%;
-  transition: margin 0.22s cubic-bezier(0.2, 0, 0, 1);
-}
-
-#Wrapper .onoffswitch label .frame:before,
-#Wrapper .onoffswitch label .frame:after {
-  width: 50%;
-  height: 32px;
-  padding: 0;
-  font-size: 0;
-  color: transparent;
-  background: transparent;
-  transition: background 0.2s cubic-bezier(0.2, 0, 0, 1);
-}
-
-#Wrapper .onoffswitch label .frame:before {
-  background: var(--vt-accent);
-}
-
-#Wrapper .onoffswitch label .frame:after {
-  background: var(--vt-fill-strong);
-}
-
-#Wrapper .onoffswitch input[type="checkbox"]:not(:checked) + label:hover,
-#Wrapper .onoffswitch input[type="checkbox"]:not(:checked) + label:hover .frame:after {
-  background: var(--vt-hover);
-}
-
-#Wrapper .onoffswitch input[type="checkbox"]:checked + label:hover .frame:before {
-  background: var(--vt-accent-strong);
+  display: none;
 }
 
 #Wrapper .onoffswitch label .switch {
-  z-index: 2;
-  top: 0;
+  position: absolute;
+  top: 50%;
   bottom: auto;
-  left: 0;
+  left: 8px;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 16px;
   height: 16px;
-  margin: 8px;
+  margin: 0;
   border-radius: 999px;
   background: var(--vt-control);
+  color: var(--vt-control);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+  transform: translateY(-50%);
   transition: left 0.22s cubic-bezier(0.2, 0, 0, 1), width 0.22s cubic-bezier(0.2, 0, 0, 1),
-    height 0.22s cubic-bezier(0.2, 0, 0, 1), margin 0.22s cubic-bezier(0.2, 0, 0, 1),
-    background 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1),
+    height 0.22s cubic-bezier(0.2, 0, 0, 1), background 0.2s cubic-bezier(0.2, 0, 0, 1),
+    color 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1),
     transform 0.12s cubic-bezier(0.2, 0, 0, 1);
 }
 
@@ -1192,20 +1154,17 @@ body {
   transition: opacity 0.15s cubic-bezier(0.2, 0, 0, 1), transform 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 
-#Wrapper .onoffswitch label:active .switch {
-  transform: scale(0.94);
-}
-
-#Wrapper .onoffswitch input[type="checkbox"]:checked + label .frame {
-  margin-left: 0;
+#Wrapper .onoffswitch input[type="checkbox"]:checked + label {
+  background: var(--vt-accent);
+  box-shadow: inset 0 0 0 2px transparent;
 }
 
 #Wrapper .onoffswitch input[type="checkbox"]:checked + label .switch {
-  left: calc(100% - 28px);
+  left: 24px;
   width: 24px;
   height: 24px;
-  margin: 4px;
   background: var(--vt-on-accent);
+  color: var(--vt-on-accent);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.26);
 }
 
@@ -1214,9 +1173,26 @@ body {
   transform: scale(1);
 }
 
+#Wrapper .onoffswitch label:hover .switch {
+  box-shadow: 0 0 0 8px color-mix(in srgb, currentColor 12%, transparent), 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+#Wrapper .onoffswitch input[type="checkbox"]:checked + label:hover .switch {
+  box-shadow: 0 0 0 8px color-mix(in srgb, currentColor 12%, transparent), 0 1px 3px rgba(0, 0, 0, 0.26);
+}
+
+#Wrapper .onoffswitch label:active .switch {
+  transform: translateY(-50%) scale(1.04);
+  box-shadow: 0 0 0 12px color-mix(in srgb, currentColor 16%, transparent), 0 1px 3px rgba(0, 0, 0, 0.24);
+}
+
 #Wrapper .onoffswitch input[type="checkbox"]:focus-visible + label {
   outline: 3px solid var(--vt-accent);
   outline-offset: 3px;
+}
+
+#Wrapper .onoffswitch input[type="checkbox"]:focus-visible + label .switch {
+  box-shadow: 0 0 0 8px color-mix(in srgb, currentColor 12%, transparent), 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 #Wrapper .rt-pick-art {
